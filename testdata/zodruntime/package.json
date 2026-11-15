@@ -4,8 +4,7 @@
   "dependencies": {
     "@traversable/zod-test": "^0",
     "@traversable/zod-types": "^0",
-    "@trpc/client": "^11.4.3",
-    "@trpc/server": "^11.4.3",
+    "@trpc/client": "^11.28.2",
     "fast-check": "^3",
     "tsx": "^4",
     "typescript": "^7.0.2",
