@@ -18,27 +18,25 @@ type parsedRequest struct {
 	input json.RawMessage
 }
 
-// containsTraversal reports whether path has a "." or ".." segment.
+// containsTraversal reports whether path has a "." or ".." segment, splitting
+// on "/" and on the "," that separates batched procedures.
 func containsTraversal(path string) bool {
-	for segment := range strings.SplitSeq(path, "/") {
-		if segment == "." || segment == ".." {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(strings.FieldsFunc(path, func(r rune) bool { return r == '/' || r == ',' }), func(segment string) bool {
+		return segment == "." || segment == ".."
+	})
 }
 
 // parseRequest extracts procedure path(s) and input(s) from an HTTP request.
-func parseRequest(r *http.Request, basePath string, isBatch bool, maxBodySize int64) ([]parsedRequest, error) {
-	rawPath, ok := stripBasePath(r.URL.Path, basePath)
-	if !ok || rawPath == "" {
+func parseRequest(r *http.Request, isBatch bool, maxBodySize int64) ([]parsedRequest, error) {
+	if containsTraversal(r.URL.Path) {
+		return nil, trpcgo.NewError(trpcgo.CodeBadRequest, "invalid procedure path")
+	}
+	rawPath := procedurePath(r)
+	if rawPath == "" {
 		return nil, trpcgo.NewError(trpcgo.CodeNotFound, "no procedure path specified")
 	}
 
 	if !isBatch {
-		if containsTraversal(rawPath) {
-			return nil, trpcgo.NewError(trpcgo.CodeBadRequest, "invalid procedure path")
-		}
 		input, err := parseInput(r, maxBodySize)
 		if err != nil {
 			return nil, err
@@ -48,9 +46,6 @@ func parseRequest(r *http.Request, basePath string, isBatch bool, maxBodySize in
 
 	// Batch: paths are comma-separated.
 	paths := strings.Split(rawPath, ",")
-	if slices.ContainsFunc(paths, containsTraversal) {
-		return nil, trpcgo.NewError(trpcgo.CodeBadRequest, "invalid procedure path")
-	}
 	var indexedInputs map[string]json.RawMessage
 	if r.Method == http.MethodGet {
 		rawInput := r.URL.Query().Get("input")
@@ -125,36 +120,19 @@ func isBatchRequest(r *http.Request) bool {
 }
 
 // parsePaths extracts procedure paths from the URL without parsing inputs.
-func parsePaths(r *http.Request, basePath string) []string {
-	rawPath, ok := stripBasePath(r.URL.Path, basePath)
-	if !ok || rawPath == "" {
+func parsePaths(r *http.Request) []string {
+	rawPath := procedurePath(r)
+	if rawPath == "" {
 		return nil
 	}
 	return strings.Split(rawPath, ",")
 }
 
-// stripBasePath removes the configured handler base path from an HTTP path.
-func stripBasePath(path, basePath string) (string, bool) {
-	if basePath == "" {
-		return strings.TrimPrefix(path, "/"), true
-	}
-	if !strings.HasPrefix(basePath, "/") {
-		basePath = "/" + basePath
-	}
-	for len(basePath) > 1 && strings.HasSuffix(basePath, "/") {
-		basePath = strings.TrimSuffix(basePath, "/")
-	}
-	if basePath == "/" {
-		return strings.TrimPrefix(path, "/"), true
-	}
-	if path == basePath {
-		return "", true
-	}
-	prefix := basePath + "/"
-	if after, ok := strings.CutPrefix(path, prefix); ok {
-		return after, true
-	}
-	return "", false
+// procedurePath returns the last segment of the URL path. Procedure paths
+// never contain "/", so the handler works wherever it is mounted.
+func procedurePath(r *http.Request) string {
+	path := r.URL.Path
+	return path[strings.LastIndex(path, "/")+1:]
 }
 
 // mergeLastEventId reads the lastEventId from the request and merges it into input.

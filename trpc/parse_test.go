@@ -29,34 +29,24 @@ func requireErrorCode(t *testing.T, err error, want trpcgo.ErrorCode) {
 	}
 }
 
-func TestStripBasePath(t *testing.T) {
+func TestProcedurePath(t *testing.T) {
 	tests := []struct {
-		name     string
-		path     string
-		basePath string
-		want     string
-		wantOK   bool
+		url  string
+		want string
 	}{
-		{"empty base", "/user.get", "", "user.get", true},
-		{"simple base", "/trpc/user.get", "/trpc", "user.get", true},
-		{"trailing slash base", "/trpc/user.get", "/trpc/", "user.get", true},
-		{"multiple trailing slashes", "/trpc/user.get", "/trpc///", "user.get", true},
-		{"no leading slash base", "/trpc/user.get", "trpc", "user.get", true},
-		{"root base", "/user.get", "/", "user.get", true},
-		{"exact match no proc", "/trpc", "/trpc", "", true},
-		{"mismatch", "/api/user.get", "/trpc", "", false},
-		{"partial mismatch", "/trpcfoo/user.get", "/trpc", "", false},
-		{"nested base", "/api/v1/user.get", "/api/v1", "user.get", true},
-		{"nested proc path", "/trpc/user.list.all", "/trpc", "user.list.all", true},
+		{"/user.get", "user.get"},
+		{"/trpc/user.get", "user.get"},
+		{"/api/v1/trpc/user.list.all", "user.list.all"},
+		{"/trpc/user.get,user.list?batch=1", "user.get,user.list"},
+		{"/trpc", "trpc"},
+		{"/trpc/", ""},
+		{"/", ""},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, ok := stripBasePath(tt.path, tt.basePath)
-			if ok != tt.wantOK {
-				t.Errorf("stripBasePath(%q, %q) ok = %v, want %v", tt.path, tt.basePath, ok, tt.wantOK)
-			}
-			if got != tt.want {
-				t.Errorf("stripBasePath(%q, %q) = %q, want %q", tt.path, tt.basePath, got, tt.want)
+		t.Run(tt.url, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
+			if got := procedurePath(req); got != tt.want {
+				t.Errorf("procedurePath(%q) = %q, want %q", tt.url, got, tt.want)
 			}
 		})
 	}
@@ -75,6 +65,7 @@ func TestContainsTraversal(t *testing.T) {
 		{"user/../admin", true},
 		{"user/./get", true},
 		{"user.get/something", false},
+		{"echo,..", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
@@ -109,23 +100,21 @@ func TestIsBatchRequest(t *testing.T) {
 
 func TestParsePaths(t *testing.T) {
 	tests := []struct {
-		name     string
-		url      string
-		basePath string
-		want     []string
+		name string
+		url  string
+		want []string
 	}{
-		{"single path", "/trpc/user.get", "/trpc", []string{"user.get"}},
-		{"batch paths", "/trpc/user.get,user.list", "/trpc", []string{"user.get", "user.list"}},
-		{"exact base match returns nil", "/trpc", "/trpc", nil},
-		{"wrong base", "/api/user.get", "/trpc", nil},
+		{"single path", "/trpc/user.get", []string{"user.get"}},
+		{"batch paths", "/trpc/user.get,user.list", []string{"user.get", "user.list"}},
+		{"no procedure returns nil", "/trpc/", nil},
 		// parsePaths does not validate traversal — that's the caller's job
 		// (parseRequest checks containsTraversal after calling parsePaths).
-		{"returns traversal paths unvalidated", "/trpc/../etc", "/trpc", []string{"../etc"}},
+		{"returns traversal paths unvalidated", "/trpc/..,user.get", []string{"..", "user.get"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
-			got := parsePaths(req, tt.basePath)
+			got := parsePaths(req)
 			if tt.want == nil {
 				if got != nil {
 					t.Errorf("parsePaths() = %v, want nil", got)
@@ -268,8 +257,8 @@ func TestParseInput_POST(t *testing.T) {
 
 func TestParseRequest_Single(t *testing.T) {
 	t.Run("no path returns CodeNotFound", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/trpc", nil)
-		_, err := parseRequest(req, "/trpc", false, 0)
+		req := httptest.NewRequest(http.MethodGet, "/trpc/", nil)
+		_, err := parseRequest(req, false, 0)
 		requireErrorCode(t, err, trpcgo.CodeNotFound)
 	})
 
@@ -277,14 +266,14 @@ func TestParseRequest_Single(t *testing.T) {
 	// would rarely reach the handler. This is defense-in-depth.
 	t.Run("traversal returns CodeBadRequest", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/../etc/passwd", nil)
-		_, err := parseRequest(req, "/trpc", false, 0)
+		_, err := parseRequest(req, false, 0)
 		requireErrorCode(t, err, trpcgo.CodeBadRequest)
 	})
 
 	t.Run("GET with input", func(t *testing.T) {
 		encoded := url.QueryEscape(`{"message":"hi"}`)
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo?input="+encoded, nil)
-		calls, err := parseRequest(req, "/trpc", false, 0)
+		calls, err := parseRequest(req, false, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -299,7 +288,7 @@ func TestParseRequest_Single(t *testing.T) {
 	t.Run("POST with body", func(t *testing.T) {
 		body := `{"message":"posted"}`
 		req := httptest.NewRequest(http.MethodPost, "/trpc/greet", strings.NewReader(body))
-		calls, err := parseRequest(req, "/trpc", false, 0)
+		calls, err := parseRequest(req, false, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -320,7 +309,7 @@ func TestParseRequest_Single(t *testing.T) {
 
 	t.Run("POST with empty body", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/trpc/ping", strings.NewReader(""))
-		calls, err := parseRequest(req, "/trpc", false, 0)
+		calls, err := parseRequest(req, false, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -337,7 +326,7 @@ func TestParseRequest_Batch(t *testing.T) {
 	t.Run("GET batch", func(t *testing.T) {
 		input := `{"0":{"message":"a"},"1":{"message":"b"}}`
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo,greet?batch=1&input="+input, nil)
-		calls, err := parseRequest(req, "/trpc", true, 0)
+		calls, err := parseRequest(req, true, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -368,7 +357,7 @@ func TestParseRequest_Batch(t *testing.T) {
 	t.Run("POST batch", func(t *testing.T) {
 		body := `{"0":{"message":"x"}}`
 		req := httptest.NewRequest(http.MethodPost, "/trpc/echo?batch=1", strings.NewReader(body))
-		calls, err := parseRequest(req, "/trpc", true, 0)
+		calls, err := parseRequest(req, true, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -386,7 +375,7 @@ func TestParseRequest_Batch(t *testing.T) {
 
 	t.Run("batch with no input", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/ping,ping?batch=1", nil)
-		calls, err := parseRequest(req, "/trpc", true, 0)
+		calls, err := parseRequest(req, true, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -400,19 +389,19 @@ func TestParseRequest_Batch(t *testing.T) {
 
 	t.Run("batch traversal returns CodeBadRequest", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo,../etc/passwd?batch=1", nil)
-		_, err := parseRequest(req, "/trpc", true, 0)
+		_, err := parseRequest(req, true, 0)
 		requireErrorCode(t, err, trpcgo.CodeBadRequest)
 	})
 
 	t.Run("GET batch malformed JSON returns CodeParseError", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo?batch=1&input=not-json", nil)
-		_, err := parseRequest(req, "/trpc", true, 0)
+		_, err := parseRequest(req, true, 0)
 		requireErrorCode(t, err, trpcgo.CodeParseError)
 	})
 
 	t.Run("POST batch malformed JSON returns CodeParseError", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/trpc/echo?batch=1", strings.NewReader("{broken"))
-		_, err := parseRequest(req, "/trpc", true, 0)
+		_, err := parseRequest(req, true, 0)
 		requireErrorCode(t, err, trpcgo.CodeParseError)
 	})
 
@@ -420,7 +409,7 @@ func TestParseRequest_Batch(t *testing.T) {
 		bigInput := `{"0":"` + strings.Repeat("x", 200) + `"}`
 		encoded := url.QueryEscape(bigInput)
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo?batch=1&input="+encoded, nil)
-		_, err := parseRequest(req, "/trpc", true, 50)
+		_, err := parseRequest(req, true, 50)
 		requireErrorCode(t, err, trpcgo.CodePayloadTooLarge)
 	})
 
@@ -428,7 +417,7 @@ func TestParseRequest_Batch(t *testing.T) {
 		// Two paths but input only for index 0.
 		input := `{"0":{"message":"only-first"}}`
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo,ping?batch=1&input="+input, nil)
-		calls, err := parseRequest(req, "/trpc", true, 0)
+		calls, err := parseRequest(req, true, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -444,7 +433,7 @@ func TestParseRequest_Batch(t *testing.T) {
 	// passes it through; the handler rejects it at procedure lookup.
 	t.Run("empty segment in batch produces empty path", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo,,ping?batch=1", nil)
-		calls, err := parseRequest(req, "/trpc", true, 0)
+		calls, err := parseRequest(req, true, 0)
 		if err != nil {
 			t.Fatal(err)
 		}

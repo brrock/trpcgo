@@ -168,7 +168,7 @@ func TestSSEClientCompatibility(t *testing.T) {
 		})
 		for _, path := range []string{"tracked", "plain", "validation", "serialization"} {
 			rec := httptest.NewRecorder()
-			trpc.NewHandler(r, "/trpc").ServeHTTP(rec, httptest.NewRequest("GET", "/trpc/"+path, nil))
+			trpc.NewHandler(r).ServeHTTP(rec, httptest.NewRequest("GET", "/trpc/"+path, nil))
 			frames[name+"/"+path] = rec.Body.String()
 		}
 	}
@@ -203,7 +203,7 @@ func TestSSETrackedInvalidID(t *testing.T) {
 				return ch, nil
 			})
 			rec := httptest.NewRecorder()
-			trpc.NewHandler(r, "/trpc").ServeHTTP(rec, httptest.NewRequest("GET", "/trpc/events", nil))
+			trpc.NewHandler(r).ServeHTTP(rec, httptest.NewRequest("GET", "/trpc/events", nil))
 			resp := rec.Result()
 			defer resp.Body.Close()
 			events := parseSSEEvents(t, resp, 10)

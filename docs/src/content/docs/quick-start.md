@@ -78,7 +78,7 @@ func main() {
 
     trpcgo.MustMutation(router, "user.create", createUser)
 
-    handler := trpc.NewHandler(router, "/trpc",
+    handler := trpc.NewHandler(router,
         trpc.WithCORS(trpc.CORSConfig{
             AllowedOrigins: []string{"http://localhost:3000"},
         }),

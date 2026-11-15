@@ -85,7 +85,7 @@ func TestSubscriptionSSE(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	input := url.QueryEscape(`{"count":3}`)
 	resp := mustGet(t, server, "/trpc/counter?input="+input)
@@ -136,7 +136,7 @@ func TestSubscriptionVoidStream(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/ticks")
 	defer func() { _ = resp.Body.Close() }()
@@ -160,7 +160,7 @@ func TestSubscriptionError(t *testing.T) {
 		return nil, trpcgo.NewError(trpcgo.CodeUnauthorized, "not allowed")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/fail")
 	defer func() { _ = resp.Body.Close() }()
@@ -183,7 +183,7 @@ func TestSubscriptionCannotBeBatched(t *testing.T) {
 		return "hi", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/stream,hello?batch=1&input="+url.QueryEscape(`{"0":{},"1":{}}`))
 	defer func() { _ = resp.Body.Close() }()
@@ -206,7 +206,7 @@ func TestSubscriptionPing(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/slow")
 	defer func() { _ = resp.Body.Close() }()
@@ -255,7 +255,7 @@ func TestSubscriptionMaxDuration(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	start := time.Now()
 	resp := mustGet(t, server, "/trpc/forever")
@@ -319,7 +319,7 @@ func TestSubscriptionTrackedEvents(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/items")
 	defer func() { _ = resp.Body.Close() }()
@@ -559,7 +559,7 @@ func TestSubscriptionUntrackedEventsHaveNoID(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/plain")
 	defer func() { _ = resp.Body.Close() }()
@@ -592,7 +592,7 @@ func TestSubscriptionWireFormat(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/single")
 	defer func() { _ = resp.Body.Close() }()
@@ -648,7 +648,7 @@ func TestSubscriptionConnectedEventData(t *testing.T) {
 			return ch, nil
 		})
 
-		server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+		server := newTestServer(t, trpc.NewHandler(router))
 		resp := mustGet(t, server, "/trpc/stream")
 		defer func() { _ = resp.Body.Close() }()
 
@@ -677,7 +677,7 @@ func TestSubscriptionConnectedEventData(t *testing.T) {
 			return ch, nil
 		})
 
-		server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+		server := newTestServer(t, trpc.NewHandler(router))
 		resp := mustGet(t, server, "/trpc/stream")
 		defer func() { _ = resp.Body.Close() }()
 
@@ -713,7 +713,7 @@ func TestSubscriptionTrackedSerializationError(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
@@ -799,7 +799,7 @@ func TestLastEventId(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := trpcgo.NewRouter()
 			gotID := lastEventIdSubscription(r)
-			server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+			server := newTestServer(t, trpc.NewHandler(r))
 
 			u := server.URL + "/trpc/events"
 			params := url.Values{}
@@ -852,7 +852,7 @@ func TestLastEventIdNotMergedForQueries(t *testing.T) {
 		}
 	})
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	inputJSON := url.QueryEscape(`{"id":"1"}`)
 	req, _ := http.NewRequest("GET", server.URL+"/trpc/user.get?input="+inputJSON, nil)
@@ -885,7 +885,7 @@ func TestSubscriptionNullAnyInput(t *testing.T) {
 	})
 
 	rec := httptest.NewRecorder()
-	trpc.NewHandler(r, "/trpc").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/events?input=null", nil))
+	trpc.NewHandler(r).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/events?input=null", nil))
 	if !called || rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "event: return\n") {
 		t.Fatalf("called=%v, status=%d, body=%s; want a completed subscription", called, rec.Code, rec.Body.String())
 	}
@@ -907,7 +907,7 @@ func TestSubscriptionReconnectPaddedNull(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/trpc/events?input="+url.QueryEscape(raw), nil)
 			req.Header.Set("Last-Event-Id", "42")
 			rec := httptest.NewRecorder()
-			trpc.NewHandler(r, "/trpc").ServeHTTP(rec, req)
+			trpc.NewHandler(r).ServeHTTP(rec, req)
 			if rec.Code != http.StatusOK || lastEventID != "42" {
 				t.Fatalf("status=%d, lastEventId=%v; want 200, 42; body=%s", rec.Code, lastEventID, rec.Body.String())
 			}
@@ -940,7 +940,7 @@ func TestSubscriptionNilItemsRunOutputHooks(t *testing.T) {
 			}, option)
 
 			rec := httptest.NewRecorder()
-			trpc.NewHandler(r, "/trpc").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/events", nil))
+			trpc.NewHandler(r).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/events", nil))
 			if calls != 1 {
 				t.Errorf("hook called %d times; want once for the nil item and never for EOF", calls)
 			}

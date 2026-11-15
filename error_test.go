@@ -18,7 +18,7 @@ import (
 )
 
 func TestErrorResponse(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	tests := []struct {
 		name       string
@@ -79,7 +79,7 @@ func TestErrorResponse(t *testing.T) {
 }
 
 func TestErrorEnvelopeShape(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	resp := mustGet(t, server, "/trpc/nonexistent")
 	body := decodeJSON(t, resp)
@@ -181,7 +181,7 @@ func TestInternalErrorNotLeaked(t *testing.T) {
 		return "", fmt.Errorf("secret database password: hunter2")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/fail")
 	defer func() { _ = resp.Body.Close() }()
@@ -223,7 +223,7 @@ func TestDevModeStackTrace(t *testing.T) {
 		return User{}, trpcgo.NewError(trpcgo.CodeNotFound, "not found")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/user.get?input="+url.QueryEscape(`{"id":"1"}`))
 	body := decodeJSON(t, resp)
 	data := errorData(t, body)
@@ -244,7 +244,7 @@ func TestNonDevModeNoStackTrace(t *testing.T) {
 		return User{}, trpcgo.NewError(trpcgo.CodeNotFound, "not found")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/user.get?input="+url.QueryEscape(`{"id":"1"}`))
 	body := decodeJSON(t, resp)
 	data := errorData(t, body)
@@ -270,7 +270,7 @@ func TestErrorFormatter(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeBadRequest, "invalid input")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/fail")
 	if resp.StatusCode != 400 {
@@ -309,7 +309,7 @@ func TestErrorFormatterReceivesContext(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeBadRequest, "nope")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/fail")
 	_ = resp.Body.Close()
@@ -330,7 +330,7 @@ func TestErrorFormatterNotFound(t *testing.T) {
 		return "ok", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/nonexistent")
 	_ = resp.Body.Close()
@@ -352,7 +352,7 @@ func TestErrorFormatterReceivesProcedureType(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeBadRequest, "bad")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustPost(t, server, "/trpc/fail", `{}`)
 	_ = resp.Body.Close()
 
@@ -374,7 +374,7 @@ func TestErrorFormatterOnInternalError(t *testing.T) {
 		return "", fmt.Errorf("unexpected: db connection lost")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustGet(t, server, "/trpc/panic-ish")
 	_ = resp.Body.Close()
 
@@ -404,7 +404,7 @@ func TestErrorFormatterInBatchResponse(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeBadRequest, "bad")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Batch: ok + fail
 	resp := mustGet(t, server, "/trpc/ok,fail")
@@ -438,7 +438,7 @@ func TestErrorFormatterSSESerializedError(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp, err := http.Get(server.URL + "/trpc/bad")
 	if err != nil {
@@ -471,7 +471,7 @@ func TestErrorFormatterReceivesInput(t *testing.T) {
 			return "", trpcgo.NewError(trpcgo.CodeBadRequest, "bad")
 		})
 
-		server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+		server := newTestServer(t, trpc.NewHandler(router))
 		resp := mustGet(t, server, `/trpc/fail?input={"id":"42"}`)
 		_ = resp.Body.Close()
 
@@ -496,7 +496,7 @@ func TestErrorFormatterReceivesInput(t *testing.T) {
 			return "", trpcgo.NewError(trpcgo.CodeBadRequest, "bad")
 		})
 
-		server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+		server := newTestServer(t, trpc.NewHandler(router))
 		resp := mustPost(t, server, "/trpc/fail", `{"name":"alice"}`)
 		_ = resp.Body.Close()
 
@@ -521,7 +521,7 @@ func TestErrorFormatterReceivesInput(t *testing.T) {
 			return "", trpcgo.NewError(trpcgo.CodeBadRequest, "bad")
 		})
 
-		server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+		server := newTestServer(t, trpc.NewHandler(router))
 		resp := mustGet(t, server, "/trpc/fail")
 		_ = resp.Body.Close()
 
@@ -546,7 +546,7 @@ func TestErrorFormatterReceivesInput(t *testing.T) {
 			return "ok", nil
 		})
 
-		server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+		server := newTestServer(t, trpc.NewHandler(router))
 		resp := mustGet(t, server, `/trpc/missing?input={"x":1}`)
 		_ = resp.Body.Close()
 
@@ -579,7 +579,7 @@ func TestErrorFormatterInputInJSONLBatch(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeBadRequest, "bad")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	req, _ := http.NewRequest("POST", server.URL+"/trpc/fail,fail?batch=1", strings.NewReader(`{"0":{"id":"a"},"1":{"id":"b"}}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -619,7 +619,7 @@ func TestErrorFormatterBypassedForPreContextErrors(t *testing.T) {
 		return "hi", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// ?batch=1 with batching disabled hits writeErrorResponse with ctx=nil,
 	// which takes the defaultErrorEnvelope branch — formatter is never called.
@@ -654,7 +654,7 @@ func TestErrorFormatterInputNilForSSEConnectionLimit(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Fill the single SSE slot.
 	resp1, err := http.Get(server.URL + "/trpc/stream")
@@ -705,7 +705,7 @@ func TestErrorFormatterInputInSSESerializedError(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp, err := http.Get(server.URL + `/trpc/bad?input={"id":"99"}`)
 	if err != nil {

@@ -8,17 +8,17 @@ The `trpc` package implements the tRPC HTTP wire format on top of `net/http`.
 ## Mounting
 
 ```go
-mux.Handle("/trpc/", trpc.NewHandler(router, "/trpc"))
+mux.Handle("/trpc/", trpc.NewHandler(router))
 ```
 
-The base path is stripped before procedure lookup:
+The procedure is the last URL path segment, so the mount point does not matter:
 
 | URL | Procedure |
 | --- | --- |
 | `/trpc/user.get` | `user.get` |
 | `/trpc/admin.audit.list` | `admin.audit.list` |
 
-Path traversal segments `.` and `..` are rejected.
+Path traversal segments `.` and `..` are rejected. See [Router Options](/router-options/) for mounting in chi, gin, and echo.
 
 ## Methods
 
@@ -148,7 +148,7 @@ Headers are sent before the procedures run, so cookies and response headers set 
 ```go
 trpcgo.MustQuery(router, "user.get", getUser)
 
-handler := trpc.NewHandler(router, "/trpc")
+handler := trpc.NewHandler(router)
 
 // This registration is not visible to handler.
 trpcgo.MustQuery(router, "user.late", lateHandler)

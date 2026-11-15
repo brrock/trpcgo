@@ -20,7 +20,7 @@ router := trpcgo.NewRouter(
 defer router.Close()
 ```
 
-Register all procedures and middleware before constructing the HTTP handler. `trpc.NewHandler(router, "/trpc")` snapshots the current procedure map, so later registrations do not affect that handler.
+Register all procedures and middleware before constructing the HTTP handler. `trpc.NewHandler(router)` snapshots the current procedure map, so later registrations do not affect that handler.
 
 ## Procedures
 
@@ -47,10 +47,10 @@ trpcgo supports:
 Package `github.com/befabri/trpcgo/trpc` exposes the tRPC-compatible HTTP handler:
 
 ```go
-mux.Handle("/trpc/", trpc.NewHandler(router, "/trpc"))
+mux.Handle("/trpc/", trpc.NewHandler(router))
 ```
 
-If the base path is `/trpc`, a request to `/trpc/user.get` resolves to procedure `user.get`.
+The procedure is the last URL path segment, so a request to `/trpc/user.get` resolves to procedure `user.get` wherever the handler is mounted.
 
 The handler supports:
 

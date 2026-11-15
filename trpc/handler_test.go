@@ -63,7 +63,7 @@ func setupSubscriptionRouter(t *testing.T, called *bool) *trpcgo.Router {
 
 func TestHandler_QueryGET(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	input, _ := json.Marshal(map[string]string{"message": "world"})
 	req := httptest.NewRequest(http.MethodGet, "/trpc/echo?input="+string(input), nil)
@@ -89,7 +89,7 @@ func TestHandler_QueryGET(t *testing.T) {
 
 func TestHandler_MutationPOST(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	body, _ := json.Marshal(map[string]string{"message": "alice"})
 	req := httptest.NewRequest(http.MethodPost, "/trpc/greet", strings.NewReader(string(body)))
@@ -116,7 +116,7 @@ func TestHandler_MutationPOST(t *testing.T) {
 
 func TestHandler_NotFound(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/trpc/nonexistent", nil)
 	rec := httptest.NewRecorder()
@@ -136,7 +136,7 @@ func TestHandler_MethodNotAllowed(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPut, "/trpc/echo", nil)
 	rec := httptest.NewRecorder()
@@ -152,7 +152,7 @@ func TestHandler_MethodNotAllowed(t *testing.T) {
 
 func TestHandler_QueryPostNotAllowed(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	body, _ := json.Marshal(map[string]string{"message": "test"})
 	req := httptest.NewRequest(http.MethodPost, "/trpc/echo", strings.NewReader(string(body)))
@@ -172,7 +172,7 @@ func TestHandler_QueryPostWithMethodOverride(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	body, _ := json.Marshal(map[string]string{"message": "override"})
 	req := httptest.NewRequest(http.MethodPost, "/trpc/echo", strings.NewReader(string(body)))
@@ -187,7 +187,7 @@ func TestHandler_QueryPostWithMethodOverride(t *testing.T) {
 
 func TestHandler_PostRequiresJSONContentType(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "text/plain")
@@ -215,7 +215,7 @@ func TestHandler_PostWithoutBodyAllowsMissingContentType(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "/trpc/ping", nil)
 	rec := httptest.NewRecorder()
@@ -235,7 +235,7 @@ func TestHandler_CSRFRejectsCrossOriginPost(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -253,7 +253,7 @@ func TestHandler_CSRFRejectsCrossOriginPost(t *testing.T) {
 
 func TestHandler_CSRFAllowsSameOriginPost(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -268,7 +268,7 @@ func TestHandler_CSRFAllowsSameOriginPost(t *testing.T) {
 
 func TestHandler_CSRFAllowsSameOriginWithDefaultPort(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test:443/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -283,7 +283,7 @@ func TestHandler_CSRFAllowsSameOriginWithDefaultPort(t *testing.T) {
 
 func TestHandler_CSRFRejectsInvalidRequestHost(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "http://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Host = "api.example.test:bad"
@@ -299,7 +299,7 @@ func TestHandler_CSRFRejectsInvalidRequestHost(t *testing.T) {
 
 func TestHandler_CSRFAllowsSameOriginRefererWithPath(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -314,7 +314,7 @@ func TestHandler_CSRFAllowsSameOriginRefererWithPath(t *testing.T) {
 
 func TestHandler_CSRFRejectsOriginHeaderWithPath(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -329,7 +329,7 @@ func TestHandler_CSRFRejectsOriginHeaderWithPath(t *testing.T) {
 
 func TestHandler_CSRFRejectsRefererWithUserinfo(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -344,7 +344,7 @@ func TestHandler_CSRFRejectsRefererWithUserinfo(t *testing.T) {
 
 func TestHandler_CSRFPublicOriginAllowsTLSProxySameOriginPost(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithPublicOrigin("https://api.example.test"))
+	h := trpc.NewHandler(r, trpc.WithPublicOrigin("https://api.example.test"))
 
 	req := httptest.NewRequest(http.MethodPost, "http://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -359,7 +359,7 @@ func TestHandler_CSRFPublicOriginAllowsTLSProxySameOriginPost(t *testing.T) {
 
 func TestHandler_CSRFPublicOriginRejectsPathConfiguration(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithPublicOrigin("https://api.example.test/app"))
+	h := trpc.NewHandler(r, trpc.WithPublicOrigin("https://api.example.test/app"))
 
 	req := httptest.NewRequest(http.MethodPost, "http://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -374,7 +374,7 @@ func TestHandler_CSRFPublicOriginRejectsPathConfiguration(t *testing.T) {
 
 func TestHandler_TrustedOriginCanonicalizesDefaultPort(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithTrustedOrigins("https://app.example.test:443"))
+	h := trpc.NewHandler(r, trpc.WithTrustedOrigins("https://app.example.test:443"))
 
 	req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -396,7 +396,7 @@ func TestHandler_CSRFRejectsCookiePostWithoutOriginOrReferer(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodPost, "/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -414,7 +414,7 @@ func TestHandler_CSRFRejectsCookiePostWithoutOriginOrReferer(t *testing.T) {
 
 func TestHandler_CSRFRequireOriginRejectsPostWithoutOriginOrReferer(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithCSRFRequireOrigin(true))
+	h := trpc.NewHandler(r, trpc.WithCSRFRequireOrigin(true))
 
 	req := httptest.NewRequest(http.MethodPost, "/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -429,7 +429,7 @@ func TestHandler_CSRFRequireOriginRejectsPostWithoutOriginOrReferer(t *testing.T
 func TestHandler_SubscriptionOriginCheckDisabledByDefault(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	req.Header.Set("Origin", "https://evil.example.test")
@@ -447,7 +447,7 @@ func TestHandler_SubscriptionOriginCheckDisabledByDefault(t *testing.T) {
 func TestHandler_SubscriptionOriginCheckRejectsCrossOriginGet(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithSubscriptionOriginCheck(true))
+	h := trpc.NewHandler(r, trpc.WithSubscriptionOriginCheck(true))
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	req.Header.Set("Origin", "https://evil.example.test")
@@ -465,7 +465,7 @@ func TestHandler_SubscriptionOriginCheckRejectsCrossOriginGet(t *testing.T) {
 func TestHandler_SubscriptionOriginCheckRejectsCookieGetWithoutOriginOrReferer(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithSubscriptionOriginCheck(true))
+	h := trpc.NewHandler(r, trpc.WithSubscriptionOriginCheck(true))
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	req.Header.Set("Cookie", "sid=123")
@@ -483,7 +483,7 @@ func TestHandler_SubscriptionOriginCheckRejectsCookieGetWithoutOriginOrReferer(t
 func TestHandler_SubscriptionOriginCheckAllowsNonCookieGetWithoutOriginOrReferer(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithSubscriptionOriginCheck(true))
+	h := trpc.NewHandler(r, trpc.WithSubscriptionOriginCheck(true))
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	rec := httptest.NewRecorder()
@@ -500,7 +500,7 @@ func TestHandler_SubscriptionOriginCheckAllowsNonCookieGetWithoutOriginOrReferer
 func TestHandler_SubscriptionOriginCheckAllowsSameOriginGet(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithSubscriptionOriginCheck(true))
+	h := trpc.NewHandler(r, trpc.WithSubscriptionOriginCheck(true))
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	req.Header.Set("Origin", "https://api.example.test")
@@ -518,7 +518,7 @@ func TestHandler_SubscriptionOriginCheckAllowsSameOriginGet(t *testing.T) {
 func TestHandler_SubscriptionOriginCheckAllowsCORSOrigin(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithCORS(trpc.CORSConfig{
 			AllowedOrigins:   []string{"https://app.example.test"},
 			AllowCredentials: true,
@@ -547,7 +547,7 @@ func TestHandler_SubscriptionOriginCheckAllowsTrustedOriginWithoutCORS(t *testin
 	// explicitly trusted. The subscription check must honor WithTrustedOrigins.
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithTrustedOrigins("https://app.example.test"),
 		trpc.WithSubscriptionOriginCheck(true),
 	)
@@ -568,7 +568,7 @@ func TestHandler_SubscriptionOriginCheckAllowsTrustedOriginWithoutCORS(t *testin
 func TestHandler_SubscriptionOriginCheckAllowsSameOriginRefererWithPath(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithSubscriptionOriginCheck(true))
+	h := trpc.NewHandler(r, trpc.WithSubscriptionOriginCheck(true))
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	req.Header.Set("Referer", "https://api.example.test/dashboard?tab=live")
@@ -586,7 +586,7 @@ func TestHandler_SubscriptionOriginCheckAllowsSameOriginRefererWithPath(t *testi
 func TestHandler_SubscriptionOriginCheckRejectsCrossOriginReferer(t *testing.T) {
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithSubscriptionOriginCheck(true))
+	h := trpc.NewHandler(r, trpc.WithSubscriptionOriginCheck(true))
 
 	req := httptest.NewRequest(http.MethodGet, "https://api.example.test/trpc/events", nil)
 	req.Header.Set("Referer", "https://evil.example.test/page")
@@ -606,7 +606,7 @@ func TestHandler_SubscriptionOriginCheckAllowsPublicOriginProxy(t *testing.T) {
 	// uses the public https origin.
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithPublicOrigin("https://api.example.test"),
 		trpc.WithSubscriptionOriginCheck(true),
 	)
@@ -630,7 +630,7 @@ func TestHandler_SubscriptionOriginCheckPostRequiresCSRFTrust(t *testing.T) {
 	// origin is therefore rejected before the subscription check runs.
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithCORS(trpc.CORSConfig{AllowedOrigins: []string{"https://app.example.test"}}),
 		trpc.WithSubscriptionOriginCheck(true),
 	)
@@ -653,7 +653,7 @@ func TestHandler_SubscriptionOriginCheckWildcardRejectsCookieRequest(t *testing.
 	// the resolver, even though the browser would block the response read.
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithCORS(trpc.CORSConfig{AllowedOrigins: []string{"*"}}),
 		trpc.WithSubscriptionOriginCheck(true),
 	)
@@ -677,7 +677,7 @@ func TestHandler_SubscriptionOriginCheckWildcardAllowsCookielessRequest(t *testi
 	// still admit an anonymous cross-site subscription.
 	called := false
 	r := setupSubscriptionRouter(t, &called)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithCORS(trpc.CORSConfig{AllowedOrigins: []string{"*"}}),
 		trpc.WithSubscriptionOriginCheck(true),
 	)
@@ -697,7 +697,7 @@ func TestHandler_SubscriptionOriginCheckWildcardAllowsCookielessRequest(t *testi
 
 func TestHandler_CORSPreflight(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+	h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 		AllowedOrigins:   []string{"https://app.example.test:443"},
 		AllowCredentials: true,
 	}))
@@ -742,7 +742,7 @@ func TestHandler_CORSMaxAge(t *testing.T) {
 
 	t.Run("whole seconds emitted verbatim", func(t *testing.T) {
 		r := setupRouter(t)
-		h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+		h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 			AllowedOrigins: []string{"https://app.example.test"},
 			MaxAge:         600 * time.Second,
 		}))
@@ -753,7 +753,7 @@ func TestHandler_CORSMaxAge(t *testing.T) {
 
 	t.Run("positive sub-second is not truncated to zero", func(t *testing.T) {
 		r := setupRouter(t)
-		h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+		h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 			AllowedOrigins: []string{"https://app.example.test"},
 			MaxAge:         500 * time.Millisecond,
 		}))
@@ -765,7 +765,7 @@ func TestHandler_CORSMaxAge(t *testing.T) {
 
 	t.Run("zero MaxAge omits the header", func(t *testing.T) {
 		r := setupRouter(t)
-		h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+		h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 			AllowedOrigins: []string{"https://app.example.test"},
 		}))
 		if got := preflight(t, h); got != "" {
@@ -776,7 +776,7 @@ func TestHandler_CORSMaxAge(t *testing.T) {
 
 func TestHandler_CORSRejectsDisallowedPreflightOrigin(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+	h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 		AllowedOrigins: []string{"https://app.example.test"},
 	}))
 
@@ -799,7 +799,7 @@ func TestHandler_CORSRejectsDisallowedPreflightOrigin(t *testing.T) {
 
 func TestHandler_CORSAllowedOriginDoesNotBypassCSRF(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+	h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 		AllowedOrigins:   []string{"https://app.example.test"},
 		AllowCredentials: true,
 	}))
@@ -820,7 +820,7 @@ func TestHandler_CORSAllowedOriginDoesNotBypassCSRF(t *testing.T) {
 
 func TestHandler_CORSWithTrustedOriginAllowsCSRF(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc",
+	h := trpc.NewHandler(r,
 		trpc.WithCORS(trpc.CORSConfig{
 			AllowedOrigins:   []string{"https://app.example.test"},
 			AllowCredentials: true,
@@ -855,7 +855,7 @@ func TestHandler_TrustedOriginRejectsNonOriginConfiguration(t *testing.T) {
 	for _, configuredOrigin := range tests {
 		t.Run(configuredOrigin, func(t *testing.T) {
 			r := setupRouter(t)
-			h := trpc.NewHandler(r, "/trpc", trpc.WithTrustedOrigins(configuredOrigin))
+			h := trpc.NewHandler(r, trpc.WithTrustedOrigins(configuredOrigin))
 
 			req := httptest.NewRequest(http.MethodPost, "https://api.example.test/trpc/greet", strings.NewReader(`{"message":"alice"}`))
 			req.Header.Set("Content-Type", "application/json")
@@ -872,7 +872,7 @@ func TestHandler_TrustedOriginRejectsNonOriginConfiguration(t *testing.T) {
 
 func TestHandler_CORSRejectsPathConfiguredOrigin(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc", trpc.WithCORS(trpc.CORSConfig{
+	h := trpc.NewHandler(r, trpc.WithCORS(trpc.CORSConfig{
 		AllowedOrigins: []string{"https://app.example.test/admin"},
 	}))
 
@@ -892,7 +892,7 @@ func TestHandler_CORSRejectsPathConfiguredOrigin(t *testing.T) {
 
 func TestHandler_BatchGET(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	input, _ := json.Marshal(map[string]json.RawMessage{
 		"0": json.RawMessage(`{"message":"a"}`),
@@ -925,7 +925,7 @@ func TestHandler_BatchMaxSizeBoundaries(t *testing.T) {
 		}); err != nil {
 			t.Fatal(err)
 		}
-		h := trpc.NewHandler(r, "/trpc")
+		h := trpc.NewHandler(r)
 
 		req := httptest.NewRequest(http.MethodGet, "/trpc/ping,ping?batch=1", nil)
 		rec := httptest.NewRecorder()
@@ -948,7 +948,7 @@ func TestHandler_BatchMaxSizeBoundaries(t *testing.T) {
 		}); err != nil {
 			t.Fatal(err)
 		}
-		h := trpc.NewHandler(r, "/trpc")
+		h := trpc.NewHandler(r)
 
 		req := httptest.NewRequest(http.MethodGet, "/trpc/ping,ping?batch=1", nil)
 		rec := httptest.NewRecorder()
@@ -971,7 +971,7 @@ func TestHandler_BatchMaxSizeBoundaries(t *testing.T) {
 		}); err != nil {
 			t.Fatal(err)
 		}
-		h := trpc.NewHandler(r, "/trpc")
+		h := trpc.NewHandler(r)
 
 		req := httptest.NewRequest(http.MethodGet, "/trpc/ping,ping?batch=1", nil)
 		rec := httptest.NewRecorder()
@@ -997,7 +997,7 @@ func TestHandler_BatchRejectsSubscriptionsBeforeExecute(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/trpc/events,events?batch=1", nil)
 	rec := httptest.NewRecorder()
@@ -1013,7 +1013,7 @@ func TestHandler_BatchRejectsSubscriptionsBeforeExecute(t *testing.T) {
 
 func TestHandler_JSONLBatchGET(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	input, _ := json.Marshal(map[string]json.RawMessage{
 		"1": json.RawMessage(`{"message":"jsonl"}`),
@@ -1106,7 +1106,7 @@ func (w *noFlushResponseWriter) WriteHeader(status int) {
 
 func TestHandler_JSONLBatchRequiresFlusher(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/ping,ping?batch=1", nil)
 	req.Header.Set("trpc-accept", "application/jsonl")
 	rec := &noFlushResponseWriter{}
@@ -1134,7 +1134,7 @@ func TestHandler_Subscription(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/counter", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
@@ -1179,7 +1179,7 @@ func TestHandler_LastEventIDMergedOnlyForSubscriptions(t *testing.T) {
 		}); err != nil {
 			t.Fatal(err)
 		}
-		h := trpc.NewHandler(r, "/trpc")
+		h := trpc.NewHandler(r)
 
 		req := httptest.NewRequest(http.MethodGet, "/trpc/events", nil)
 		req.Header.Set("Last-Event-Id", "evt-1")
@@ -1208,7 +1208,7 @@ func TestHandler_LastEventIDMergedOnlyForSubscriptions(t *testing.T) {
 		}); err != nil {
 			t.Fatal(err)
 		}
-		h := trpc.NewHandler(r, "/trpc")
+		h := trpc.NewHandler(r)
 		input, _ := json.Marshal(map[string]string{"message": "world"})
 
 		req := httptest.NewRequest(http.MethodGet, "/trpc/echo?input="+url.QueryEscape(string(input)), nil)
@@ -1238,7 +1238,7 @@ func TestHandler_SSEUnlimitedMaxDurationWaitsForData(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	ctx, cancel := context.WithTimeout(t.Context(), 200*time.Millisecond)
 	defer cancel()
 	req := httptest.NewRequest(http.MethodGet, "/trpc/late", nil).WithContext(ctx)
@@ -1266,7 +1266,7 @@ func TestHandler_SSEOneNanosecondMaxDurationReturns(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
 	defer cancel()
 	req := httptest.NewRequest(http.MethodGet, "/trpc/never", nil).WithContext(ctx)
@@ -1298,7 +1298,7 @@ func TestHandler_SSEStreamPanicWritesSerializedError(t *testing.T) {
 	})); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/panic", nil)
 	rec := httptest.NewRecorder()
 
@@ -1321,7 +1321,7 @@ func TestHandler_SSEConnectionCountDecrementedAfterStream(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/events", nil)
 	rec := httptest.NewRecorder()
 
@@ -1337,7 +1337,7 @@ func TestHandler_SSEConnectionCountDecrementedAfterStream(t *testing.T) {
 
 func TestHandler_PathTraversal(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/trpc/../etc/passwd", nil)
 	rec := httptest.NewRecorder()
@@ -1350,7 +1350,7 @@ func TestHandler_PathTraversal(t *testing.T) {
 
 func TestHandler_MutationGETNotAllowed(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/trpc/greet", nil)
 	rec := httptest.NewRecorder()
@@ -1363,7 +1363,7 @@ func TestHandler_MutationGETNotAllowed(t *testing.T) {
 
 func TestHandler_EmptyBasePath(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/ping", nil)
 	rec := httptest.NewRecorder()
@@ -1387,7 +1387,7 @@ func TestHandler_ErrorCallback(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/nonexistent", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
@@ -1416,7 +1416,7 @@ func TestHandler_ErrorCallbackForProcedureError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/fail", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
@@ -1442,7 +1442,7 @@ func TestHandler_BatchDisabled(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/ping,ping?batch=1", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
@@ -1457,7 +1457,7 @@ func TestHandler_BatchDisabled(t *testing.T) {
 
 func TestHandler_VoidQuery(t *testing.T) {
 	r := setupRouter(t)
-	h := trpc.NewHandler(r, "/trpc")
+	h := trpc.NewHandler(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/trpc/ping", nil)
 	rec := httptest.NewRecorder()

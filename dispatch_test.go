@@ -97,7 +97,7 @@ func TestProcedurePanicRecovery(t *testing.T) {
 					assertSanitizedInternalError(t, err)
 				default:
 					rec := httptest.NewRecorder()
-					trpc.NewHandler(r, "/trpc").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/broken?input=%7B%7D", nil))
+					trpc.NewHandler(r).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/broken?input=%7B%7D", nil))
 					if rec.Code != http.StatusInternalServerError {
 						t.Fatalf("status=%d, body=%s", rec.Code, rec.Body.String())
 					}
@@ -210,7 +210,7 @@ func TestProcedurePanicSubscriptionSetup(t *testing.T) {
 	t.Cleanup(func() { _ = r.Close() })
 	trpcgo.MustVoidSubscribe(r, "broken", func(context.Context) (<-chan string, error) { panic(procedurePanicSecret) })
 	rec := httptest.NewRecorder()
-	trpc.NewHandler(r, "/trpc").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/broken", nil))
+	trpc.NewHandler(r).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/trpc/broken", nil))
 	if rec.Code != http.StatusInternalServerError || strings.Contains(rec.Body.String(), procedurePanicSecret) || strings.Contains(rec.Header().Get("Content-Type"), "event-stream") {
 		t.Fatalf("subscription setup panic committed a stream or leaked details: status=%d, body=%s", rec.Code, rec.Body.String())
 	}
@@ -236,7 +236,7 @@ func TestProcedurePanicBatchIsolation(t *testing.T) {
 				req.Header.Set("trpc-accept", "application/jsonl")
 			}
 			rec := httptest.NewRecorder()
-			h := trpc.NewHandler(r, "/trpc")
+			h := trpc.NewHandler(r)
 			h.ServeHTTP(rec, req)
 			var envelopes []map[string]any
 			if jsonl {

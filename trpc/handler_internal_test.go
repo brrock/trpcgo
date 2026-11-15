@@ -116,7 +116,7 @@ func TestWriteStreamReturnWithPayload(t *testing.T) {
 }
 
 func TestWriteSingleResultMarshalErrorWrites500(t *testing.T) {
-	h := NewHandler(trpcgo.NewRouter(), "/trpc")
+	h := NewHandler(trpcgo.NewRouter())
 	rec := httptest.NewRecorder()
 
 	h.writeSingleResult(t.Context(), rec, callResult{
@@ -133,7 +133,7 @@ func TestWriteSingleResultMarshalErrorWrites500(t *testing.T) {
 }
 
 func TestWriteBatchResultsMarshalErrorWrites500(t *testing.T) {
-	h := NewHandler(trpcgo.NewRouter(), "/trpc")
+	h := NewHandler(trpcgo.NewRouter())
 	rec := httptest.NewRecorder()
 
 	h.writeBatchResults(t.Context(), rec, []callResult{
@@ -166,7 +166,7 @@ func TestWriteStreamItemReceiveErrorCallsCallbackAndFormatsSSE(t *testing.T) {
 			}
 		}),
 	)
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 	rec := httptest.NewRecorder()
 	cause := errors.New("backend stream failed")
 
@@ -207,7 +207,7 @@ func TestWriteStreamItemSerializationErrorCallsCallbackAndFormatsSSE(t *testing.
 			return input.Shape
 		}),
 	)
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 	rec := httptest.NewRecorder()
 
 	closed := h.writeStreamItem(t.Context(), rec, struct {
@@ -233,7 +233,7 @@ func TestWriteStreamItemSerializationErrorCallsCallbackAndFormatsSSE(t *testing.
 
 func TestTrackSSEConnectionRejectsWhenLimitAlreadyReached(t *testing.T) {
 	r := trpcgo.NewRouter(trpcgo.WithSSEMaxConnections(1))
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 	if got := r.TrackSSEConnection(1); got != 1 {
 		t.Fatalf("initial connection count = %d, want 1", got)
 	}
@@ -254,7 +254,7 @@ func TestTrackSSEConnectionRejectsWhenLimitAlreadyReached(t *testing.T) {
 
 func TestTrackSSEConnectionUnlimitedDoesNotTrack(t *testing.T) {
 	r := trpcgo.NewRouter()
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 
 	tracked, ok := h.trackSSEConnection(httptest.NewRecorder(), t.Context(), "events")
 	if !ok || tracked {
@@ -267,7 +267,7 @@ func TestTrackSSEConnectionUnlimitedDoesNotTrack(t *testing.T) {
 
 func TestTrackSSEConnectionAllowsAtLimit(t *testing.T) {
 	r := trpcgo.NewRouter(trpcgo.WithSSEMaxConnections(1))
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 
 	tracked, ok := h.trackSSEConnection(httptest.NewRecorder(), t.Context(), "events")
 	if !tracked || !ok {
@@ -287,7 +287,7 @@ func TestWriteErrorResponseUsesFormatterWithContext(t *testing.T) {
 			"path":   input.Path,
 		}
 	}))
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 	rec := httptest.NewRecorder()
 	ctx := context.WithValue(t.Context(), ctxKey{}, "from-context")
 
@@ -308,7 +308,7 @@ func TestRequestContextReturningSameContextKeepsOriginal(t *testing.T) {
 	r := trpcgo.NewRouter(trpcgo.WithContextCreator(func(ctx context.Context, r *http.Request) context.Context {
 		return ctx
 	}))
-	h := NewHandler(r, "/trpc")
+	h := NewHandler(r)
 	req := httptest.NewRequest(http.MethodGet, "/trpc/ping", nil).WithContext(baseCtx)
 
 	ctx, cancel := h.requestContext(req)
@@ -339,7 +339,7 @@ func TestStreamFormatterPreservesCustomErrorFields(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithErrorFormatter(func(trpcgo.ErrorFormatterInput) any { return tc.formatted }))
-			h := NewHandler(r, "/trpc")
+			h := NewHandler(r)
 			sse := httptest.NewRecorder()
 			h.writeFormattedStreamError(context.Background(), sse, trpcgo.NewError(trpcgo.CodeForbidden, "denied"), parsedRequest{path: "events"})
 			want, err := json.Marshal(tc.want)
@@ -376,7 +376,7 @@ func TestLateErrorFormatterProcedureMeta(t *testing.T) {
 				return in.Shape
 			}))
 			trpcgo.MustVoidQuery(r, "value", func(context.Context) (any, error) { return func() {}, nil }, trpcgo.WithMeta("fixture"))
-			h := NewHandler(r, "/trpc")
+			h := NewHandler(r)
 			call := parsedRequest{path: "value"}
 			if transport == "sse" {
 				h.writeFormattedStreamError(context.Background(), httptest.NewRecorder(), trpcgo.NewError(trpcgo.CodeForbidden, "denied"), call)

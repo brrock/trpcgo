@@ -43,7 +43,7 @@ func TestMiddlewareOrdering(t *testing.T) {
 		}
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/test")
 	_ = resp.Body.Close()
@@ -76,7 +76,7 @@ func TestMiddlewareShortCircuit(t *testing.T) {
 		return "secret", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/secret")
 	if resp.StatusCode != 401 {
@@ -106,7 +106,7 @@ func TestMiddlewareContextPropagation(t *testing.T) {
 		return ctx.Value(ctxKey("user")).(string), nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/whoami")
 	if resp.StatusCode != 200 {
@@ -133,7 +133,7 @@ func TestOnErrorCallback(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeForbidden, "nope")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/fail")
 	_ = resp.Body.Close()
@@ -157,7 +157,7 @@ func TestOnErrorNotCalledOnSuccess(t *testing.T) {
 		return "fine", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/ok")
 	_ = resp.Body.Close()
@@ -177,7 +177,7 @@ func TestCustomContextCreator(t *testing.T) {
 		return ctx.Value(ctxKey("reqID")).(string), nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/reqid")
 	if resp.StatusCode != 200 {
@@ -215,7 +215,7 @@ func TestContextCreatorCancellationPropagation(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Start SSE connection then immediately close it.
 	resp, err := http.Get(server.URL + "/trpc/hang")
@@ -260,7 +260,7 @@ func TestProcedureOptionUsePlusWithMeta(t *testing.T) {
 		trpcgo.WithMeta(map[string]string{"role": "admin"}),
 	)
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/both")
 	_ = resp.Body.Close()
@@ -309,7 +309,7 @@ func TestProcedureBuilderMiddlewareOrder(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/ping", nil)
 		req.Header.Set("Accept", "application/json")
 		w := httptest.NewRecorder()
-		trpc.NewHandler(r, "/trpc").ServeHTTP(w, req)
+		trpc.NewHandler(r).ServeHTTP(w, req)
 	}
 
 	call(routerA)
@@ -346,7 +346,7 @@ func TestProcedureBuilderImmutable(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/trpc/"+path, nil)
 		req.Header.Set("Accept", "application/json")
 		w := httptest.NewRecorder()
-		trpc.NewHandler(r, "/trpc").ServeHTTP(w, req)
+		trpc.NewHandler(r).ServeHTTP(w, req)
 	}
 
 	calls = 0
@@ -384,7 +384,7 @@ func TestProcedureBuilderComposesWithOtherOpts(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/trpc/check", nil)
 	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
-	trpc.NewHandler(r, "/trpc").ServeHTTP(w, req)
+	trpc.NewHandler(r).ServeHTTP(w, req)
 
 	meta, ok := gotMeta.(role)
 	if !ok || !meta.Admin {
@@ -415,7 +415,7 @@ func TestProcedureBuilderNestedComposition(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/trpc/admin.action", nil)
 	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
-	trpc.NewHandler(r, "/trpc").ServeHTTP(w, req)
+	trpc.NewHandler(r).ServeHTTP(w, req)
 
 	want := []string{"auth", "admin"}
 	if !slices.Equal(order, want) {
@@ -431,7 +431,7 @@ func TestProcedureOptionNilIgnored(t *testing.T) {
 		return "ok", nil
 	}, nilOpt)
 
-	resp := mustGet(t, newTestServer(t, trpc.NewHandler(r, "/trpc")), "/trpc/ping")
+	resp := mustGet(t, newTestServer(t, trpc.NewHandler(r)), "/trpc/ping")
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
@@ -446,7 +446,7 @@ func TestProcedureBuilderNilReceiverIgnored(t *testing.T) {
 		return "ok", nil
 	}, base, trpcgo.WithMeta("ok"))
 
-	resp := mustGet(t, newTestServer(t, trpc.NewHandler(r, "/trpc")), "/trpc/ping")
+	resp := mustGet(t, newTestServer(t, trpc.NewHandler(r)), "/trpc/ping")
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
@@ -470,7 +470,7 @@ func TestProcedureBuilderContainsNilOptionIgnored(t *testing.T) {
 		return "ok", nil
 	}, base)
 
-	resp := mustGet(t, newTestServer(t, trpc.NewHandler(r, "/trpc")), "/trpc/ping")
+	resp := mustGet(t, newTestServer(t, trpc.NewHandler(r)), "/trpc/ping")
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
 		t.Fatalf("status = %d, want 200", resp.StatusCode)

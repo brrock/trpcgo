@@ -100,7 +100,7 @@ func TestJSONLBatchResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+			server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 			reqURL := server.URL + tt.path
 			if tt.input != "" {
@@ -157,7 +157,7 @@ func TestJSONLBatchResponse(t *testing.T) {
 }
 
 func TestJSONLBatchHeadFormat(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	input := url.QueryEscape(`{"0":{"id":"1"},"1":{"id":"2"}}`)
 	req, _ := http.NewRequest("GET", server.URL+"/trpc/user.getById,user.getById?batch=1&input="+input, nil)
@@ -204,7 +204,7 @@ func TestJSONLBatchHeadFormat(t *testing.T) {
 }
 
 func TestJSONLBatchVaryHeader(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	// Standard batch (no JSONL) should also have Vary header.
 	input := url.QueryEscape(`{"0":{"id":"1"}}`)
@@ -217,7 +217,7 @@ func TestJSONLBatchVaryHeader(t *testing.T) {
 }
 
 func TestJSONLBatchWithErrors(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	// One success, one error.
 	input := url.QueryEscape(`{"0":{"id":"1"},"1":{"id":"404"}}`)
@@ -268,7 +268,7 @@ func TestJSONLBatchConcurrency(t *testing.T) {
 		return User{ID: "slow", Name: "Slow"}, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	// Batch: slow first, fast second. With concurrent execution,
 	// the fast result should arrive as a chunk before the slow one.
@@ -318,7 +318,7 @@ func TestJSONLSerializationFailureProducesErrorChunk(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/trpc/bad,good?batch=1", nil)
 	req.Header.Set("trpc-accept", "application/jsonl")
 	rec := httptest.NewRecorder()
-	trpc.NewHandler(r, "/trpc").ServeHTTP(rec, req)
+	trpc.NewHandler(r).ServeHTTP(rec, req)
 	resp := rec.Result()
 	defer resp.Body.Close()
 	head, chunks := parseJSONLResponse(t, resp)
@@ -373,7 +373,7 @@ func TestJSONLSerializationFallbacks(t *testing.T) {
 				req := httptest.NewRequest(http.MethodGet, "/trpc/good,bad,good?batch=1", nil)
 				req.Header.Set("trpc-accept", "application/jsonl")
 				rec := httptest.NewRecorder()
-				trpc.NewHandler(r, "/trpc").ServeHTTP(rec, req)
+				trpc.NewHandler(r).ServeHTTP(rec, req)
 				resp := rec.Result()
 				defer resp.Body.Close()
 				head, chunks := parseJSONLResponse(t, resp)

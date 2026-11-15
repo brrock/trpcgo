@@ -19,7 +19,7 @@ import (
 )
 
 func TestQuery(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	tests := []struct {
 		name       string
@@ -66,7 +66,7 @@ func TestQuery(t *testing.T) {
 }
 
 func TestQueryWithInput(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	input := url.QueryEscape(`{"id":"42"}`)
 	resp := mustGet(t, server, "/trpc/user.getById?input="+input)
@@ -84,93 +84,52 @@ func TestQueryWithInput(t *testing.T) {
 	}
 }
 
-func TestBasePathBoundaryEnforced(t *testing.T) {
-	tests := []struct {
-		name     string
-		basePath string
-	}{
-		{name: "base without trailing slash", basePath: "/trpc"},
-		{name: "base with trailing slash", basePath: "/trpc/"},
-	}
+func TestHandlerMountsAnywhere(t *testing.T) {
+	router := trpcgo.NewRouter()
+	trpcgo.MustVoidQuery(router, "user.hello", func(ctx context.Context) (string, error) {
+		return "ok", nil
+	})
+	handler := trpc.NewHandler(router)
 
+	tests := []struct {
+		name  string
+		mount func(*http.ServeMux)
+		url   string
+	}{
+		{"root", func(m *http.ServeMux) { m.Handle("/", handler) }, "/user.hello"},
+		{"prefix", func(m *http.ServeMux) { m.Handle("/trpc/", handler) }, "/trpc/user.hello"},
+		{"nested prefix", func(m *http.ServeMux) { m.Handle("/api/v1/trpc/", handler) }, "/api/v1/trpc/user.hello"},
+		{"stripped prefix", func(m *http.ServeMux) { m.Handle("/trpc/", http.StripPrefix("/trpc", handler)) }, "/trpc/user.hello"},
+		{"wildcard pattern", func(m *http.ServeMux) { m.Handle("/rpc/{proc}", handler) }, "/rpc/user.hello"},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			router := trpcgo.NewRouter()
-			trpcgo.VoidQuery(router, "hello", func(ctx context.Context) (string, error) {
-				return "ok", nil
-			})
-			trpcgo.VoidQuery(router, "x", func(ctx context.Context) (string, error) {
-				return "should-not-match", nil
-			})
-
-			server := newTestServer(t, trpc.NewHandler(router, tt.basePath))
-
-			// Valid request under the configured base path.
-			valid := mustGet(t, server, "/trpc/hello")
-			if valid.StatusCode != 200 {
-				_ = valid.Body.Close()
-				t.Fatalf("valid status = %d, want 200", valid.StatusCode)
+			mux := http.NewServeMux()
+			tt.mount(mux)
+			resp := mustGet(t, newTestServer(t, mux), tt.url)
+			if resp.StatusCode != 200 {
+				_ = resp.Body.Close()
+				t.Fatalf("status = %d, want 200", resp.StatusCode)
 			}
-			if got := resultScalar(t, decodeJSON(t, valid)); got != "ok" {
-				t.Fatalf("valid result.data = %v, want ok", got)
-			}
-
-			// Invalid path that shares the same prefix but not a segment boundary.
-			// Before the fix, /trpcx incorrectly matched basePath /trpc and invoked
-			// procedure path "x".
-			invalid := mustGet(t, server, "/trpcx")
-			if invalid.StatusCode != 404 {
-				_ = invalid.Body.Close()
-				t.Fatalf("invalid status = %d, want 404", invalid.StatusCode)
-			}
-			if code := errorData(t, decodeJSON(t, invalid))["code"]; code != "NOT_FOUND" {
-				t.Fatalf("invalid error.data.code = %v, want NOT_FOUND", code)
-			}
-
-			// Batch request must follow the same boundary rule.
-			invalidBatch := mustGet(t, server, "/trpcx?batch=1")
-			if invalidBatch.StatusCode != 404 {
-				_ = invalidBatch.Body.Close()
-				t.Fatalf("invalid batch status = %d, want 404", invalidBatch.StatusCode)
-			}
-			if code := errorData(t, decodeJSON(t, invalidBatch))["code"]; code != "NOT_FOUND" {
-				t.Fatalf("invalid batch error.data.code = %v, want NOT_FOUND", code)
+			if got := resultScalar(t, decodeJSON(t, resp)); got != "ok" {
+				t.Fatalf("result.data = %v, want ok", got)
 			}
 		})
 	}
 }
 
-func TestRootBasePathBehavior(t *testing.T) {
+func TestRegisterRejectsUnroutablePaths(t *testing.T) {
 	router := trpcgo.NewRouter()
-	trpcgo.VoidQuery(router, "hello", func(ctx context.Context) (string, error) {
-		return "ok", nil
-	})
-
-	server := newTestServer(t, trpc.NewHandler(router, "/"))
-
-	// Root base path should expose procedures directly at /<path>.
-	resp := mustGet(t, server, "/hello")
-	if resp.StatusCode != 200 {
-		_ = resp.Body.Close()
-		t.Fatalf("status = %d, want 200", resp.StatusCode)
-	}
-	if got := resultScalar(t, decodeJSON(t, resp)); got != "ok" {
-		t.Fatalf("result.data = %v, want ok", got)
-	}
-
-	// Requests with extra segments should not match.
-	notFound := mustGet(t, server, "/trpc/hello")
-	if notFound.StatusCode != 404 {
-		_ = notFound.Body.Close()
-		t.Fatalf("status = %d, want 404", notFound.StatusCode)
-	}
-	if code := errorData(t, decodeJSON(t, notFound))["code"]; code != "NOT_FOUND" {
-		t.Fatalf("error.data.code = %v, want NOT_FOUND", code)
+	for _, path := range []string{"", "user/get", "a,b"} {
+		err := trpcgo.VoidQuery(router, path, func(ctx context.Context) (string, error) { return "", nil })
+		if err == nil {
+			t.Errorf("VoidQuery(%q) succeeded, want error", path)
+		}
 	}
 }
 
 func TestMutation(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	tests := []struct {
 		name       string
@@ -204,7 +163,7 @@ func TestMutation(t *testing.T) {
 }
 
 func TestMethodValidation(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	tests := []struct {
 		name       string
@@ -258,7 +217,7 @@ func TestMethodOverride(t *testing.T) {
 	trpcgo.VoidQuery(router, "hello", func(ctx context.Context) (string, error) {
 		return "hi", nil
 	})
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// POST to a query should succeed with method override
 	resp := mustPost(t, server, "/trpc/hello", "")
@@ -281,7 +240,7 @@ func TestNonTRPCErrorWrappedAs500(t *testing.T) {
 	trpcgo.VoidQuery(router, "fail", func(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("unexpected database error")
 	})
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/fail")
 	if resp.StatusCode != 500 {
@@ -295,29 +254,12 @@ func TestNonTRPCErrorWrappedAs500(t *testing.T) {
 	}
 }
 
-func TestNoBasePath(t *testing.T) {
-	router := trpcgo.NewRouter()
-	trpcgo.VoidQuery(router, "hello", func(ctx context.Context) (string, error) {
-		return "hi", nil
-	})
-	server := newTestServer(t, trpc.NewHandler(router, ""))
-
-	resp := mustGet(t, server, "/hello")
-	if resp.StatusCode != 200 {
-		_ = resp.Body.Close()
-		t.Fatalf("status = %d, want 200", resp.StatusCode)
-	}
-	if got := resultScalar(t, decodeJSON(t, resp)); got != "hi" {
-		t.Fatalf("result.data = %v, want hi", got)
-	}
-}
-
 func TestDeepNestedProcedure(t *testing.T) {
 	router := trpcgo.NewRouter()
 	trpcgo.VoidQuery(router, "a.b.c.d.deep", func(ctx context.Context) (string, error) {
 		return "found", nil
 	})
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/a.b.c.d.deep")
 	if resp.StatusCode != 200 {
@@ -330,7 +272,7 @@ func TestDeepNestedProcedure(t *testing.T) {
 }
 
 func TestContentType(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	tests := []struct {
 		name string
@@ -353,7 +295,7 @@ func TestContentType(t *testing.T) {
 }
 
 func TestConcurrentRequests(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	var wg sync.WaitGroup
 	var failures atomic.Int32
@@ -540,7 +482,7 @@ func TestMaxBodySizeEnforced(t *testing.T) {
 		return input.Data, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	t.Run("within limit succeeds", func(t *testing.T) {
 		resp := mustPost(t, server, "/trpc/echo", `{"data":"hi"}`)
@@ -748,7 +690,7 @@ func TestRouterMergeMethod(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	server := newTestServer(t, trpc.NewHandler(main, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(main))
 
 	// sub procedure accessible
 	resp := mustGet(t, server, "/trpc/sub.hello")
@@ -775,7 +717,7 @@ func TestHandlerSnapshotIsolation(t *testing.T) {
 		return "ok", nil
 	})
 
-	handler := trpc.NewHandler(router, "/trpc")
+	handler := trpc.NewHandler(router)
 	server := newTestServer(t, handler)
 
 	// Register a new procedure AFTER Handler() was called.
@@ -807,7 +749,7 @@ func TestHandlerSnapshotIsolation(t *testing.T) {
 	}
 
 	// A second Handler() call sees the new procedure.
-	handler2 := trpc.NewHandler(router, "/trpc")
+	handler2 := trpc.NewHandler(router)
 	server2 := newTestServer(t, handler2)
 	resp = mustGet(t, server2, "/trpc/after")
 	if resp.StatusCode != http.StatusOK {
@@ -897,7 +839,7 @@ func TestHTTPInterfaceInput(t *testing.T) {
 					req.Header.Set("Content-Type", "application/json")
 				}
 				rec := httptest.NewRecorder()
-				trpc.NewHandler(r, "/trpc").ServeHTTP(rec, req)
+				trpc.NewHandler(r).ServeHTTP(rec, req)
 				if rec.Code != http.StatusOK || calls != 1 {
 					t.Fatalf("status=%d calls=%d body=%s", rec.Code, calls, rec.Body.String())
 				}

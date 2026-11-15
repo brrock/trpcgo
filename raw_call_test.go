@@ -364,7 +364,7 @@ func TestRawCallAfterHandler(t *testing.T) {
 	})
 
 	// Call Handler() first to pre-compute middleware chains
-	_ = trpc.NewHandler(router, "/trpc")
+	_ = trpc.NewHandler(router)
 
 	// RawCall should use the pre-computed chain
 	result, err := router.RawCall(t.Context(), "test", nil)
@@ -382,7 +382,7 @@ func TestRawCallConcurrent(t *testing.T) {
 		return input.V, nil
 	})
 
-	_ = trpc.NewHandler(router, "/trpc") // pre-compute
+	_ = trpc.NewHandler(router) // pre-compute
 
 	var wg sync.WaitGroup
 	errs := make(chan error, 100)

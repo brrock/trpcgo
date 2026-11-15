@@ -20,10 +20,20 @@ Use the `trpc` package to serve a router over the tRPC HTTP protocol:
 
 ```go
 mux := http.NewServeMux()
-mux.Handle("/trpc/", trpc.NewHandler(router, "/trpc"))
+mux.Handle("/trpc/", trpc.NewHandler(router))
 ```
 
-The base path is stripped before procedure lookup. With base path `/trpc`, `/trpc/user.get` maps to procedure `user.get`.
+The handler reads the procedure from the last URL segment, so it works at any mount point, in any router, with or without prefix stripping. It is a plain `http.Handler`:
+
+```go
+mux.Handle("/trpc/", h)                          // net/http
+mux.Handle("/trpc/", http.StripPrefix("/trpc", h)) // stripped prefix works too
+r.Mount("/trpc", h)                               // chi
+g.Any("/trpc/*path", gin.WrapH(h))               // gin
+e.Any("/trpc/*", echo.WrapHandler(h))            // echo
+```
+
+Procedure paths therefore cannot contain `/` or `,`; registering one returns an error.
 
 :::caution
 `trpc.NewHandler` snapshots the router procedure map. Register procedures, merge routers, and add global middleware before constructing the handler.
@@ -50,7 +60,7 @@ For `WithMaxBodySize` and `WithMaxBatchSize`, `0` leaves the current setting unc
 `trpc.NewHandler` accepts options for HTTP-layer behavior:
 
 ```go
-handler := trpc.NewHandler(router, "/trpc",
+handler := trpc.NewHandler(router,
     trpc.WithCORS(trpc.CORSConfig{
         AllowedOrigins:   []string{"https://app.example.com"},
         AllowCredentials: true,

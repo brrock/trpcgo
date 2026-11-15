@@ -16,7 +16,7 @@
 //	})
 //
 //	// import "github.com/befabri/trpcgo/trpc"
-//	http.Handle("/trpc/", trpc.NewHandler(r, "/trpc"))
+//	http.Handle("/trpc/", trpc.NewHandler(r))
 //
 // # Procedures
 //

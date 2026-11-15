@@ -26,7 +26,7 @@ func TestMergeRouters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	server := newTestServer(t, trpc.NewHandler(merged, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(merged))
 
 	resp1 := mustGet(t, server, "/trpc/hello")
 	if resp1.StatusCode != 200 {
@@ -93,7 +93,7 @@ func TestMergeRoutersWithGlobalMiddleware(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	server := newTestServer(t, trpc.NewHandler(merged, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(merged))
 
 	resp := mustGet(t, server, "/trpc/a")
 	_ = resp.Body.Close()
@@ -121,7 +121,7 @@ func TestMergePreservesPerProcMiddleware(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	server := newTestServer(t, trpc.NewHandler(main, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(main))
 	resp := mustGet(t, server, "/trpc/guarded")
 	_ = resp.Body.Close()
 
@@ -145,7 +145,7 @@ func TestMergePreservesMeta(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	server := newTestServer(t, trpc.NewHandler(main, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(main))
 	resp := mustGet(t, server, "/trpc/tagged")
 	_ = resp.Body.Close()
 
@@ -170,7 +170,7 @@ func TestMergePreservesOutputValidator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	server := newTestServer(t, trpc.NewHandler(main, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(main))
 	resp := mustGet(t, server, "/trpc/user")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -187,7 +187,7 @@ func TestMergeEmptyRouters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	server := newTestServer(t, trpc.NewHandler(merged, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(merged))
 
 	resp := mustGet(t, server, "/trpc/anything")
 	_ = resp.Body.Close()

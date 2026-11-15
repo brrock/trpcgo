@@ -30,7 +30,7 @@ const created = await client.user.create.mutate({ name: 'Alice', email: 'alice@e
 If your frontend runs at `http://localhost:3000` and calls Go at `http://localhost:8080`, configure both CORS and trust for the frontend origin on the Go handler:
 
 ```go
-handler := trpc.NewHandler(router, "/trpc",
+handler := trpc.NewHandler(router,
     trpc.WithCORS(trpc.CORSConfig{
         AllowedOrigins: []string{"http://localhost:3000"},
     }),

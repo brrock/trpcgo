@@ -14,7 +14,7 @@ import (
 )
 
 func TestBatchGET(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	input := url.QueryEscape(`{"0":{"id":"1"},"1":{"id":"2"}}`)
 	resp := mustGet(t, server, "/trpc/user.getById,user.getById?batch=1&input="+input)
@@ -38,7 +38,7 @@ func TestBatchGET(t *testing.T) {
 }
 
 func TestBatchPOST(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	resp := mustPost(t, server, "/trpc/user.create,user.create?batch=1", `{"0":{"name":"Alice"},"1":{"name":"Bob"}}`)
 	if resp.StatusCode != 200 {
@@ -61,7 +61,7 @@ func TestBatchPOST(t *testing.T) {
 }
 
 func TestBatchMixedStatus(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	// First succeeds (id=1), second fails (id=404)
 	input := url.QueryEscape(`{"0":{"id":"1"},"1":{"id":"404"}}`)
@@ -85,7 +85,7 @@ func TestBatchMixedStatus(t *testing.T) {
 }
 
 func TestBatchAllSameError(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	input := url.QueryEscape(`{"0":{"id":"404"},"1":{"id":"404"}}`)
 	resp := mustGet(t, server, "/trpc/user.getById,user.getById?batch=1&input="+input)
@@ -96,7 +96,7 @@ func TestBatchAllSameError(t *testing.T) {
 }
 
 func TestBatchDifferentProcedures(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	input := url.QueryEscape(`{"0":{},"1":{"id":"5"}}`)
 	resp := mustGet(t, server, "/trpc/hello,user.getById?batch=1&input="+input)
@@ -120,7 +120,7 @@ func TestBatchDifferentProcedures(t *testing.T) {
 }
 
 func TestBatchWithNotFoundProcedure(t *testing.T) {
-	server := newTestServer(t, trpc.NewHandler(setupRouter(), "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(setupRouter()))
 
 	input := url.QueryEscape(`{"0":{},"1":{}}`)
 	resp := mustGet(t, server, "/trpc/hello,nonexistent?batch=1&input="+input)
@@ -145,7 +145,7 @@ func TestBatchDisabled(t *testing.T) {
 	trpcgo.VoidQuery(router, "hello", func(ctx context.Context) (string, error) {
 		return "hi", nil
 	})
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/hello,hello?batch=1")
 	defer func() { _ = resp.Body.Close() }()
@@ -161,7 +161,7 @@ func TestBatchSizeLimitDefault(t *testing.T) {
 		return "pong", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// 11 paths exceeds default limit of 10.
 	paths := strings.Repeat("ping,", 10) + "ping"
@@ -193,7 +193,7 @@ func TestBatchSizeLimitWithinLimit(t *testing.T) {
 		return "pong", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// 2 paths is within default limit of 10.
 	resp := mustPost(t, server, "/trpc/ping,ping?batch=1", `{"0":null,"1":null}`)
@@ -210,7 +210,7 @@ func TestBatchSizeLimitCustom(t *testing.T) {
 		return "pong", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// 3 paths exceeds custom limit of 2.
 	resp := mustPost(t, server, "/trpc/ping,ping,ping?batch=1", `{"0":null,"1":null,"2":null}`)
@@ -231,7 +231,7 @@ func TestBatchSizeLimitDisabled(t *testing.T) {
 		return "pong", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// 15 paths with limit disabled should succeed.
 	paths := strings.Repeat("ping,", 14) + "ping"
@@ -259,7 +259,7 @@ func TestBatchSizeLimitJSONL(t *testing.T) {
 		return "pong", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// 3 paths exceeds limit of 2, should be rejected even for JSONL.
 	req, _ := http.NewRequest("POST", server.URL+"/trpc/ping,ping,ping?batch=1",

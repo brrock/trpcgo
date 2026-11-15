@@ -70,7 +70,7 @@ func main() {
         return User{ID: "1", Name: input.Name, Email: input.Email}, nil
     })
 
-    handler := trpc.NewHandler(router, "/trpc",
+    handler := trpc.NewHandler(router,
         trpc.WithCORS(trpc.CORSConfig{
             AllowedOrigins: []string{"http://localhost:3000"},
         }),
@@ -86,6 +86,8 @@ func main() {
 ```
 
 `WithValidator(trpcgo.StructValidator(validate.Struct))` validates every struct in the input on the server; the tags alone do not validate requests.
+
+`handler` is a plain `http.Handler` that reads the procedure from the last URL segment, so you can mount it at any path in any Go router: `r.Mount("/trpc", handler)` in chi, `g.Any("/trpc/*path", gin.WrapH(handler))` in gin, or behind `http.StripPrefix`.
 
 ### 2. Generate types and start the server
 

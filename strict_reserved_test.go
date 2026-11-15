@@ -123,7 +123,7 @@ func TestStrictInputInfiniteQueryDirection(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := trpcgo.NewRouter()
 			tt.register(t, r)
-			server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+			server := newTestServer(t, trpc.NewHandler(r))
 
 			resp := mustGet(t, server, "/trpc/list?input="+url.QueryEscape(tt.input))
 			envelope := decodeJSON(t, resp)
@@ -160,7 +160,7 @@ func TestStrictInputMutationRejectsDirection(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	resp := mustPost(t, server, "/trpc/archive", `{"cursor":"abc","direction":"forward"}`)
 	envelope := decodeJSON(t, resp)
@@ -185,7 +185,7 @@ func TestRawCallDropsInfiniteQueryDirection(t *testing.T) {
 func TestStrictInputDisabledIgnoresDirection(t *testing.T) {
 	r := trpcgo.NewRouter(trpcgo.WithStrictInput(false))
 	echoQuery[offsetPageInput](t, r)
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	resp := mustGet(t, server, "/trpc/list?input="+url.QueryEscape(`{"page":2,"direction":"forward"}`))
 	if data := resultData(t, decodeJSON(t, resp)); data["page"] != float64(2) {
@@ -210,7 +210,7 @@ func TestStrictInputSubscriptionReconnectWithoutLastEventID(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	req, _ := http.NewRequest("GET", server.URL+"/trpc/events?input="+url.QueryEscape(`{"channel":"general"}`), nil)
 	req.Header.Set("Last-Event-Id", "evt-7")

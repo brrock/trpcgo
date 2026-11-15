@@ -88,7 +88,7 @@ Start with the sanitized fields in `input.Shape` and return an `ErrorEnvelope` t
 Use `trpc.WithCORS` when browsers call the API from another origin:
 
 ```go
-trpcHandler := trpc.NewHandler(router, "/trpc",
+trpcHandler := trpc.NewHandler(router,
     trpc.WithCORS(trpc.CORSConfig{
         AllowedOrigins:   []string{"https://app.example.com"},
         AllowedHeaders:   []string{"Authorization", "Content-Type", "Last-Event-Id", "trpc-accept", "X-Request-ID"},
@@ -122,7 +122,7 @@ CORS controls which browsers can read responses. It does not by itself protect c
 The tRPC handler enables Origin/Referer CSRF protection by default for `POST` requests. Same-origin requests are allowed, and exact origins configured with `WithTrustedOrigins` may send cross-origin POSTs. CORS origins are not trusted for CSRF unless you also pass them to `WithTrustedOrigins`.
 
 ```go
-trpcHandler := trpc.NewHandler(router, "/trpc",
+trpcHandler := trpc.NewHandler(router,
     trpc.WithTrustedOrigins("https://app.example.com"),
 )
 ```

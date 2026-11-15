@@ -23,14 +23,16 @@ import (
 type Handler struct {
 	router     *trpcgo.Router
 	procedures *trpcgo.ProcedureMap
-	basePath   string
 	opts       handlerOptions
 }
 
 // NewHandler creates a tRPC HTTP handler from a trpcgo Router.
-// basePath is the URL prefix stripped before procedure lookup
-// (e.g., "/trpc" means /trpc/user.getById → procedure "user.getById").
-func NewHandler(r *trpcgo.Router, basePath string, opts ...HandlerOption) *Handler {
+//
+// The handler reads the procedure from the last URL path segment, so it can be
+// mounted at any path, in any router, with or without prefix stripping:
+//
+//	mux.Handle("/trpc/", trpc.NewHandler(router))
+func NewHandler(r *trpcgo.Router, opts ...HandlerOption) *Handler {
 	r.StartDevWatcher()
 	handlerOpts := defaultHandlerOptions()
 	for _, opt := range opts {
@@ -39,7 +41,6 @@ func NewHandler(r *trpcgo.Router, basePath string, opts ...HandlerOption) *Handl
 	return &Handler{
 		router:     r,
 		procedures: r.BuildProcedureMap(),
-		basePath:   basePath,
 		opts:       handlerOpts,
 	}
 }
@@ -119,7 +120,7 @@ func (h *Handler) rejectInvalidBatch(w http.ResponseWriter, r *http.Request, isB
 		h.writeErrorResponse(w, trpcgo.NewError(trpcgo.CodeBadRequest, "batching is not enabled"), "", nil, "")
 		return true
 	}
-	paths := parsePaths(r, h.basePath)
+	paths := parsePaths(r)
 	if max := h.router.MaxBatchSize(); max > 0 && len(paths) > max {
 		h.writeErrorResponse(w, trpcgo.NewError(trpcgo.CodeBadRequest, fmt.Sprintf("batch size %d exceeds limit of %d", len(paths), max)), "", nil, "")
 		return true
@@ -141,7 +142,7 @@ func (h *Handler) hasBatchSubscription(paths []string) bool {
 }
 
 func (h *Handler) parseCalls(r *http.Request, isBatch bool) ([]parsedRequest, error) {
-	return parseRequest(r, h.basePath, isBatch, h.router.MaxBodySize())
+	return parseRequest(r, isBatch, h.router.MaxBodySize())
 }
 
 func (h *Handler) writeParseError(w http.ResponseWriter, err error) {

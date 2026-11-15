@@ -34,7 +34,7 @@ func TestProcedureMeta(t *testing.T) {
 		return "hi", nil
 	}, trpcgo.WithMeta(AuthMeta{RequiresAuth: true, Role: "admin"}))
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/hello")
 	_ = resp.Body.Close()
@@ -69,7 +69,7 @@ func TestProcedureMetaNil(t *testing.T) {
 		return "hi", nil
 	}) // no WithMeta
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/hello")
 	_ = resp.Body.Close()
@@ -97,7 +97,7 @@ func TestProcedureMetaMutation(t *testing.T) {
 		return User{ID: "1", Name: input.Name}, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustPost(t, server, "/trpc/user.create", `{"name":"Bob"}`)
 	_ = resp.Body.Close()
@@ -120,7 +120,7 @@ func TestProcedureMetaAccessibleInHandler(t *testing.T) {
 		return "ok", nil
 	}, trpcgo.WithMeta("handler-visible"))
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	resp := mustGet(t, server, "/trpc/check")
 	_ = resp.Body.Close()
@@ -151,7 +151,7 @@ func TestProcedureMetaSubscriptionType(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Initiate SSE request, just check that middleware ran.
 	req, _ := http.NewRequest("GET", server.URL+"/trpc/events", nil)
@@ -187,7 +187,7 @@ func TestProcedureMetaIsolationInBatch(t *testing.T) {
 		return "b", nil
 	}, trpcgo.WithMeta("meta-b"))
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Batch request requires ?batch=1
 	resp := mustGet(t, server, "/trpc/a,b?batch=1")
@@ -220,7 +220,7 @@ func TestSetCookieFromHandler(t *testing.T) {
 		return "ok", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustPost(t, server, "/trpc/auth.login", "")
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
@@ -261,7 +261,7 @@ func TestSetCookieFromMiddleware(t *testing.T) {
 		return "ok", nil
 	}, trpcgo.Use(mw))
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustGet(t, server, "/trpc/test")
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
@@ -285,7 +285,7 @@ func TestSetResponseHeader(t *testing.T) {
 		return "ok", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustGet(t, server, "/trpc/test")
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
@@ -310,7 +310,7 @@ func TestSetCookieOnError(t *testing.T) {
 		return "", trpcgo.NewError(trpcgo.CodeUnauthorized, "session expired")
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustPost(t, server, "/trpc/auth.logout", "")
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 401 {
@@ -341,7 +341,7 @@ func TestSetCookieInBatch(t *testing.T) {
 		return "ok", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustPost(t, server, "/trpc/noop,auth.login?batch=1", `{"0":null,"1":null}`)
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
@@ -372,7 +372,7 @@ func TestSetCookieInJSONLBatch(t *testing.T) {
 		return "ok", nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	req, _ := http.NewRequest("POST", server.URL+"/trpc/noop,auth.login?batch=1",
 		strings.NewReader(`{"0":null,"1":null}`))
 	req.Header.Set("Content-Type", "application/json")
@@ -417,7 +417,7 @@ func TestSetCookieInSubscription(t *testing.T) {
 		return ch, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 	resp := mustGet(t, server, "/trpc/events")
 	defer func() { _ = resp.Body.Close() }()
 

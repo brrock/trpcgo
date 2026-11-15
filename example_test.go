@@ -203,7 +203,7 @@ func ExampleMergeRouters() {
 		fmt.Println(err)
 		return
 	}
-	_ = trpc.NewHandler(app, "/trpc")
+	_ = trpc.NewHandler(app)
 
 	fmt.Println("merged")
 	// Output: merged

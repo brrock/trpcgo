@@ -3,6 +3,7 @@ package trpcgo
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -52,6 +53,9 @@ func (r *Router) Use(mw ...Middleware) {
 }
 
 func (r *Router) register(path string, typ ProcedureType, handler HandlerFunc, mw []Middleware, meta any, inputType, outputType reflect.Type, outputValidator func(any) error, outputParser func(any) (any, error)) error {
+	if path == "" || strings.ContainsAny(path, "/,") {
+		return fmt.Errorf("trpcgo: invalid procedure path %q: must be non-empty and contain no \"/\" or \",\"", path)
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, exists := r.procedures[path]; exists {

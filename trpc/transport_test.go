@@ -11,7 +11,7 @@ import (
 )
 
 func TestMethods_MatchWhatTheHandlerServes(t *testing.T) {
-	h := trpc.NewHandler(setupRouter(t), "/trpc")
+	h := trpc.NewHandler(setupRouter(t))
 	served := map[string]func() *http.Request{
 		http.MethodGet: func() *http.Request {
 			return httptest.NewRequest(http.MethodGet, "/trpc/ping", nil)
@@ -57,7 +57,7 @@ func TestMethods_MatchWhatTheHandlerServes(t *testing.T) {
 }
 
 func TestRequestHeaders_DriveDefaultCORS(t *testing.T) {
-	h := trpc.NewHandler(setupRouter(t), "/trpc", trpc.WithCORS(trpc.CORSConfig{
+	h := trpc.NewHandler(setupRouter(t), trpc.WithCORS(trpc.CORSConfig{
 		AllowedOrigins: []string{"https://app.example.test"},
 	}))
 
@@ -86,7 +86,7 @@ func TestRequestHeaders_DriveDefaultCORS(t *testing.T) {
 }
 
 func TestCORSPreflightForUnlistedMethodCarriesAllow(t *testing.T) {
-	h := trpc.NewHandler(setupRouter(t), "/trpc", trpc.WithCORS(trpc.CORSConfig{
+	h := trpc.NewHandler(setupRouter(t), trpc.WithCORS(trpc.CORSConfig{
 		AllowedOrigins: []string{"https://app.example.test"},
 	}))
 

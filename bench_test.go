@@ -27,7 +27,7 @@ func BenchmarkServeHTTP(b *testing.B) {
 				})
 			}
 
-			handler := trpc.NewHandler(router, "/trpc")
+			handler := trpc.NewHandler(router)
 			target := fmt.Sprintf("/trpc/proc.%d", n/2)
 
 			b.ResetTimer()
@@ -53,7 +53,7 @@ func BenchmarkServeHTTPNotFound(b *testing.B) {
 	trpcgo.VoidQuery(router, "exists", func(ctx context.Context) (string, error) {
 		return "ok", nil
 	})
-	handler := trpc.NewHandler(router, "/trpc")
+	handler := trpc.NewHandler(router)
 
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -76,7 +76,7 @@ func BenchmarkCall(b *testing.B) {
 	trpcgo.VoidQuery(router, "echo", func(ctx context.Context) (string, error) {
 		return "ok", nil
 	})
-	_ = trpc.NewHandler(router, "/trpc") // pre-compute middleware chains
+	_ = trpc.NewHandler(router) // pre-compute middleware chains
 
 	ctx := b.Context()
 	b.ResetTimer()

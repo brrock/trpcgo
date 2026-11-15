@@ -48,7 +48,7 @@ trpcgo.MustQuery(router, "user.get", getUser)
 trpcgo.MustMutation(router, "user.create", createUser)
 
 mux := http.NewServeMux()
-mux.Handle("/trpc/", trpc.NewHandler(router, "/trpc"))
+mux.Handle("/trpc/", trpc.NewHandler(router))
 ```
 
 With these dev options, creating the HTTP handler generates the frontend files and starts a watcher. Restart the Go server when you change handler behavior. [Quick Start](/quick-start/) includes the imports, validator setup, and server startup code.

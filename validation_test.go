@@ -77,7 +77,7 @@ func TestValidatorRejectsInvalidInput(t *testing.T) {
 		return ValidatedOutput{Greeting: "Hello, " + input.Name + "!"}, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Send request with empty name (missing required field).
 	input := url.QueryEscape(`{"name":""}`)
@@ -108,7 +108,7 @@ func TestValidatorAcceptsValidInput(t *testing.T) {
 		return ValidatedOutput{Greeting: "Hello, " + input.Name + "!"}, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Send request with valid name.
 	input := url.QueryEscape(`{"name":"Alice"}`)
@@ -131,7 +131,7 @@ func TestValidatorMinMax(t *testing.T) {
 		return "ok:" + input.Username, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Below min (less than 3 chars) → 400.
 	t.Run("below min", func(t *testing.T) {
@@ -201,7 +201,7 @@ func TestValidatorWithErrorFormatter(t *testing.T) {
 		return ValidatedOutput{Greeting: "Hello, " + input.Name + "!"}, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Send invalid input to trigger validation error.
 	input := url.QueryEscape(`{"name":""}`)
@@ -233,7 +233,7 @@ func TestValidatorRunsForPrimitiveInput(t *testing.T) {
 		return "echo:" + input, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	input := url.QueryEscape(`"hello"`)
 	resp := mustGet(t, server, "/trpc/echo?input="+input)
@@ -278,7 +278,7 @@ func TestValidatorWithRawCall(t *testing.T) {
 	})
 
 	// Call Handler() to pre-compute middleware chains with validation.
-	_ = trpc.NewHandler(router, "/trpc")
+	_ = trpc.NewHandler(router)
 
 	// Valid input via Call should succeed.
 	t.Run("valid input", func(t *testing.T) {
@@ -322,7 +322,7 @@ func TestValidatorNotSet(t *testing.T) {
 		return ValidatedOutput{Greeting: "Hello, " + input.Name + "!"}, nil
 	})
 
-	server := newTestServer(t, trpc.NewHandler(router, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(router))
 
 	// Send empty name — without a validator, the handler should run and produce a response.
 	input := url.QueryEscape(`{"name":""}`)
@@ -349,7 +349,7 @@ func TestOutputValidatorRejectsInvalidOutput(t *testing.T) {
 		return nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -380,7 +380,7 @@ func TestOutputValidatorPassesValidOutput(t *testing.T) {
 		return nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/good")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -413,7 +413,7 @@ func TestOutputValidatorWithMethodRuntime(t *testing.T) {
 		return User{}, nil
 	}, base)
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	resp := mustGet(t, server, "/trpc/ok")
 	if resp.StatusCode != http.StatusOK {
@@ -449,7 +449,7 @@ func TestOutputValidatorBuilderMethodRuntime(t *testing.T) {
 		return User{}, nil
 	}, base)
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	resp := mustGet(t, server, "/trpc/ok")
 	if resp.StatusCode != http.StatusOK {
@@ -481,7 +481,7 @@ func TestTypedOutputValidatorRunsOnNilAnyOutput(t *testing.T) {
 		return nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/niltyped")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -520,7 +520,7 @@ func TestOutputValidatorRunsBeforeParser(t *testing.T) {
 		}),
 	)
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/user")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -552,7 +552,7 @@ func TestOutputValidatorFailureShortCircuitsParser(t *testing.T) {
 		}),
 	)
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/user")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -578,7 +578,7 @@ func TestOutputValidatorSubscription(t *testing.T) {
 		return nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)
@@ -612,7 +612,7 @@ func TestOutputValidatorErrorFormatterSanitized(t *testing.T) {
 		return fmt.Errorf("validator failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
 	body, _ := io.ReadAll(resp.Body)
@@ -648,7 +648,7 @@ func TestOutputValidatorErrorFormatterSSESanitized(t *testing.T) {
 		return fmt.Errorf("validator failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)
@@ -685,7 +685,7 @@ func TestOutputValidatorPanicInSSEDoesNotCrashServer(t *testing.T) {
 		panic(secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)
@@ -720,7 +720,7 @@ func TestOutputValidatorOnErrorReceivesCause(t *testing.T) {
 		return fmt.Errorf("validator failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -748,7 +748,7 @@ func TestOutputValidatorOnErrorReceivesSSECause(t *testing.T) {
 		return fmt.Errorf("validator failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)
@@ -838,7 +838,7 @@ func TestOutputParserRejectsInvalidOutput(t *testing.T) {
 		return u, nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -871,7 +871,7 @@ func TestOutputParserTransformsOutput(t *testing.T) {
 		return PublicUser{ID: u.ID}, nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/strip")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -899,7 +899,7 @@ func TestOutputParserPassesValidOutput(t *testing.T) {
 		return u, nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/good")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -927,7 +927,7 @@ func TestOutputParserNotCalledOnHandlerError(t *testing.T) {
 		return u, nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/fail")
 	_ = resp.Body.Close()
 
@@ -949,7 +949,7 @@ func TestOutputParserRunsOnNilOutput(t *testing.T) {
 		return "normalized", nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/nil")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -978,7 +978,7 @@ func TestTypedOutputParserRunsOnNilAnyOutput(t *testing.T) {
 		return "normalized", nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/niltyped")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -1015,7 +1015,7 @@ func TestOutputParserOnBuilder(t *testing.T) {
 		return User{ID: "1"}, nil // will pass
 	}, base)
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 
 	resp := mustGet(t, server, "/trpc/a")
 	_ = resp.Body.Close()
@@ -1050,7 +1050,7 @@ func TestOutputParserWithMethodRuntime(t *testing.T) {
 		return User{ID: "42", Name: "Alice"}, nil
 	}, base)
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/strip")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -1079,7 +1079,7 @@ func TestOutputParserQueryWithInput(t *testing.T) {
 		return PublicUser{ID: u.ID}, nil
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/user.get?input="+url.QueryEscape(`{"id":"7"}`))
 	defer func() { _ = resp.Body.Close() }()
 
@@ -1117,7 +1117,7 @@ func TestOutputParserSubscription(t *testing.T) {
 		return PublicUser{ID: u.ID}, nil // transform: strip name
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)
@@ -1162,7 +1162,7 @@ func TestOutputParserErrorFormatterSanitized(t *testing.T) {
 		return User{}, fmt.Errorf("parser failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
 	body, _ := io.ReadAll(resp.Body)
@@ -1201,7 +1201,7 @@ func TestOutputParserErrorFormatterSSESanitized(t *testing.T) {
 		return User{}, fmt.Errorf("parser failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)
@@ -1239,7 +1239,7 @@ func TestOutputParserOnErrorReceivesCause(t *testing.T) {
 		return User{}, fmt.Errorf("parser failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp := mustGet(t, server, "/trpc/bad")
 	defer func() { _ = resp.Body.Close() }()
 
@@ -1270,7 +1270,7 @@ func TestOutputParserOnErrorReceivesSSECause(t *testing.T) {
 		return User{}, fmt.Errorf("parser failed: %s", secret)
 	}))
 
-	server := newTestServer(t, trpc.NewHandler(r, "/trpc"))
+	server := newTestServer(t, trpc.NewHandler(r))
 	resp, err := http.Get(server.URL + "/trpc/stream")
 	if err != nil {
 		t.Fatalf("request error: %v", err)

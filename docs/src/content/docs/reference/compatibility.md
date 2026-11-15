@@ -54,7 +54,7 @@ See [Zod Validation](/reference/zod-validation/) for how generated schemas match
 
 The runtime is plain `net/http`. No web framework is required.
 
-You can mount `trpc.NewHandler(router, basePath)` behind any router or middleware stack that can serve an `http.Handler`.
+You can mount `trpc.NewHandler(router)` at any path, behind any router or middleware stack that can serve an `http.Handler`.
 
 ## CORS
 

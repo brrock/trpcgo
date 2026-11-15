@@ -413,7 +413,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Handle("/trpc/*", trpc.NewHandler(router, "/trpc",
+	r.Handle("/trpc/*", trpc.NewHandler(router,
 		trpc.WithCORS(trpc.CORSConfig{
 			AllowedOrigins: []string{"http://localhost:3000"},
 			AllowedHeaders: []string{"Content-Type", "Last-Event-Id", "trpc-accept", "X-Request-ID"},
