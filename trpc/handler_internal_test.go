@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 func TestDetermineBatchStatus(t *testing.T) {

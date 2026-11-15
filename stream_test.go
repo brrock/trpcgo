@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 func parseSSEEvents(t *testing.T, resp *http.Response, maxEvents int) []sseEvent {

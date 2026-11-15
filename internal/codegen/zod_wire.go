@@ -8,7 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // writeZodJSONHelpers preserves the information JSON.parse discards when

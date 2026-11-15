@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/analysis"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/tstest"
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/analysis"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/tstest"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // zodModuleBehavior specifies an exported schema by the documents it accepts

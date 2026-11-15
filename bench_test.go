@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 // BenchmarkServeHTTP measures the full HTTP request path including the

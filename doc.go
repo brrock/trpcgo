@@ -15,7 +15,7 @@
 //		return User{ID: input.ID, Name: "Alice"}, nil
 //	})
 //
-//	// import "github.com/befabri/trpcgo/trpc"
+//	// import "github.com/brrock/trpcgo/trpc"
 //	http.Handle("/trpc/", trpc.NewHandler(r))
 //
 // # Procedures
@@ -85,5 +85,5 @@
 //
 // See the project README for full documentation, frontend setup guides,
 // struct tag reference, and working examples:
-// https://github.com/befabri/trpcgo
+// https://github.com/brrock/trpcgo
 package trpcgo

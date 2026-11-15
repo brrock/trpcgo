@@ -14,10 +14,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 type GenEmbeddedBase struct {

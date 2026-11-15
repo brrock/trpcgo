@@ -2,7 +2,7 @@ module example.com/enhanced
 
 go 1.26.0
 
-require github.com/befabri/trpcgo v0.0.0
+require github.com/brrock/trpcgo v0.0.0
 
 require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
@@ -12,4 +12,4 @@ require (
 	golang.org/x/tools v0.49.0 // indirect
 )
 
-replace github.com/befabri/trpcgo => ../../../..
+replace github.com/brrock/trpcgo => ../../../..

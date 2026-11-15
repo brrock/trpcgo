@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func TestGoJSONHelpersRuntime(t *testing.T) {

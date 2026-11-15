@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 type countingWriter struct {

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 const procedurePanicSecret = "private-procedure-panic-detail"

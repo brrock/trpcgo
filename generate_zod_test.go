@@ -14,14 +14,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/testdata/fieldcomposition"
-	"github.com/befabri/trpcgo/testdata/schemaissues"
-	fixture "github.com/befabri/trpcgo/testdata/validationconfig"
-	"github.com/befabri/trpcgo/testdata/validationcontract"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/testdata/fieldcomposition"
+	"github.com/brrock/trpcgo/testdata/schemaissues"
+	fixture "github.com/brrock/trpcgo/testdata/validationconfig"
+	"github.com/brrock/trpcgo/testdata/validationcontract"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 func TestZodRecursiveBaseExtension(t *testing.T) {
@@ -1275,7 +1275,7 @@ func TestZodConfigurationAppliedBeforeFieldBinding(t *testing.T) {
 		dir := t.TempDir()
 		symlinkNodeModules(t, dir)
 		if static {
-			pkg := parseFixture(t, "github.com/befabri/trpcgo/testdata/validationconfig", "testdata/validationconfig/types.go")
+			pkg := parseFixture(t, "github.com/brrock/trpcgo/testdata/validationconfig", "testdata/validationconfig/types.go")
 			program, err := typemap.CompileValidation(config)
 			if err != nil {
 				t.Fatal(err)

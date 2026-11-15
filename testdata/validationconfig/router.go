@@ -3,7 +3,7 @@ package validationconfig
 import (
 	"context"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 func Register(r *trpcgo.Router) {

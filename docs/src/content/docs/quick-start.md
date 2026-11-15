@@ -16,8 +16,8 @@ go mod init example.com/trpcgo-demo
 From the module root, install the runtime, generator, and validator:
 
 ```bash
-go get github.com/befabri/trpcgo@latest
-go get -tool github.com/befabri/trpcgo/cmd/trpcgo@latest
+go get github.com/brrock/trpcgo@latest
+go get -tool github.com/brrock/trpcgo/cmd/trpcgo@latest
 go get github.com/go-playground/validator/v10
 ```
 
@@ -57,8 +57,8 @@ import (
     "log"
     "net/http"
 
-    "github.com/befabri/trpcgo"
-    "github.com/befabri/trpcgo/trpc"
+    "github.com/brrock/trpcgo"
+    "github.com/brrock/trpcgo/trpc"
     "github.com/go-playground/validator/v10"
 )
 

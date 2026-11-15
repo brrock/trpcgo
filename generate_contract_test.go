@@ -12,12 +12,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/internal/analysis"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/testdata/typegraph"
-	"github.com/befabri/trpcgo/testdata/validationcontract"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/internal/analysis"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/testdata/typegraph"
+	"github.com/brrock/trpcgo/testdata/validationcontract"
 )
 
 // The complete corpus runs in one module to expose interactions between helpers.

@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/befabri/trpcgo/internal/analysis"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/fsutil"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/internal/analysis"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/fsutil"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/zodconfig"
 	"github.com/fsnotify/fsnotify"
 )
 

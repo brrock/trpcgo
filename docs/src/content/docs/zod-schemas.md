@@ -275,7 +275,7 @@ Rules without a Zod counterpart, such as `ne`, `excludesall`, `unique`, `require
 Custom validator tags and aliases need client counterparts. Declare them with `WithZodValidation`:
 
 ```go
-import "github.com/befabri/trpcgo/zodconfig"
+import "github.com/brrock/trpcgo/zodconfig"
 
 config := zodconfig.Config{
     Aliases: map[string]string{

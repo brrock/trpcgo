@@ -10,8 +10,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 func TestRawCallInputProcedureAllowsEmptyRawInput(t *testing.T) {

@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/internal/typemap/testdata/embedding"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap/testdata/embedding"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 func TestReflectGoKindAndTypeScriptMapping(t *testing.T) {

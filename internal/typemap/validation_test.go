@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 func TestConfiguredAliasGrammar(t *testing.T) {

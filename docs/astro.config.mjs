@@ -22,7 +22,7 @@ export default defineConfig({
 				Head: './src/components/Head.astro',
 				PageTitle: './src/components/PageTitleWithCopy.astro',
 			},
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/befabri/trpcgo' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/brrock/trpcgo' }],
 			sidebar: [
 				{
 					label: 'Start',

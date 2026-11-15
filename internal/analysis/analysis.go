@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 	"golang.org/x/tools/go/packages"
 )
 
-const trpcgoPkgPath = "github.com/befabri/trpcgo"
+const trpcgoPkgPath = "github.com/brrock/trpcgo"
 
 // Procedure represents a discovered tRPC procedure registration.
 type Procedure struct {

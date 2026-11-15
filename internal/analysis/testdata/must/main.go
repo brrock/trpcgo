@@ -3,7 +3,7 @@ package must
 import (
 	"context"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 type Item struct {

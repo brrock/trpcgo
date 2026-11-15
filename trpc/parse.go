@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 // parsedRequest represents a single procedure call extracted from an HTTP request.

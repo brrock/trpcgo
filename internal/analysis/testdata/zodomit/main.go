@@ -3,7 +3,7 @@ package zodomit
 import (
 	"context"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 type UpdateUserInput struct {

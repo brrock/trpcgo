@@ -17,12 +17,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/testdata/typegraph"
-	"github.com/befabri/trpcgo/testdata/validationcontract"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/testdata/typegraph"
+	"github.com/brrock/trpcgo/testdata/validationcontract"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 // zodContract runs a fixture corpus through generated schemas and compares
@@ -399,7 +399,7 @@ func typeCheck(t *testing.T, importPath string, fset *token.FileSet, files []*as
 
 func typeGraphPackage(t *testing.T) *types.Package {
 	t.Helper()
-	return parseFixture(t, "github.com/befabri/trpcgo/testdata/typegraph", "testdata/typegraph/types.go")
+	return parseFixture(t, "github.com/brrock/trpcgo/testdata/typegraph", "testdata/typegraph/types.go")
 }
 
 // runTypeGraphContract generates the named typegraph fixtures with both

@@ -14,9 +14,9 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/testdata/fieldcomposition"
-	"github.com/befabri/trpcgo/testdata/validationcontract"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/testdata/fieldcomposition"
+	"github.com/brrock/trpcgo/testdata/validationcontract"
 	"github.com/go-playground/validator/v10"
 )
 

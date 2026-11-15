@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func zodNeedsFixedArrays(defs map[string]typemap.TypeDef, reachable map[string]bool) bool {

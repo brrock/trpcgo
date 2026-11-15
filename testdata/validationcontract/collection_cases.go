@@ -3,7 +3,7 @@ package validationcontract
 import (
 	"slices"
 
-	"github.com/befabri/trpcgo/internal/gojson"
+	"github.com/brrock/trpcgo/internal/gojson"
 )
 
 var ContainerCases = []Case{

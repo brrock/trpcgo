@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // splitTopLevel splits a string by sep, respecting angle brackets.

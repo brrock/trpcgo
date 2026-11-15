@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo/internal/tstest"
+	"github.com/brrock/trpcgo/internal/tstest"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -436,13 +436,13 @@ func TestWatchGenerateLoopRegeneratesForConfigReplacement(t *testing.T) {
 // an empty script that isolatedModules rejects.
 func TestRunGenerateRemovesStaleZodWithoutSchemas(t *testing.T) {
 	dir := t.TempDir()
-	gomod := "module example.com/scalars\n\ngo 1.26.0\n\nrequire github.com/befabri/trpcgo v0.0.0\n\nreplace github.com/befabri/trpcgo => " + filepath.ToSlash(testRepoRoot(t)) + "\n"
+	gomod := "module example.com/scalars\n\ngo 1.26.0\n\nrequire github.com/brrock/trpcgo v0.0.0\n\nreplace github.com/brrock/trpcgo => " + filepath.ToSlash(testRepoRoot(t)) + "\n"
 	source := `package scalars
 
 import (
 	"context"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 func Setup() *trpcgo.Router {

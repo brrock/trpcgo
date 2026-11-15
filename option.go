@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 const defaultMaxBatchSize int = 10 //

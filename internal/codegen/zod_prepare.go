@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 // specializeZodDefinitions uses the mapper's concrete Go type metadata rather

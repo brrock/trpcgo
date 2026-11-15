@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func zodFieldType(f typemap.Field) string { return cmp.Or(f.ZodType, f.Type) }

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // zodRefinementPredicate returns the JavaScript predicate of a cross-field

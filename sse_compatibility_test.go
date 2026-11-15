@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/internal/analysis"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/testdata/ssecompat"
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/internal/analysis"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/testdata/ssecompat"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 func TestSSETrackedClientTypes(t *testing.T) {

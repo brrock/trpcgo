@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func TestFieldToZodComplexTypes(t *testing.T) {

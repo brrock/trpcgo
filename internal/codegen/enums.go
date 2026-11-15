@@ -4,7 +4,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // WriteEnums writes runtime `as const` objects for named string enum unions.

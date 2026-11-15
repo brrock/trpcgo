@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/gojson"
+	"github.com/brrock/trpcgo/internal/gojson"
 )
 
 // Cases whose result depends on the running encoding/json compute Valid from

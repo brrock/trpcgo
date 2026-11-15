@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/analysis"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/analysis"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func writeEnums(t *testing.T, defs []typemap.TypeDef) string {

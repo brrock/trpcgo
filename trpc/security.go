@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 // HandlerOption configures the HTTP tRPC handler.

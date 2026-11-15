@@ -168,7 +168,7 @@ export function Users() {
 }
 ```
 
-The [TanStack Start example](https://github.com/befabri/trpcgo/tree/main/examples/start-trpc) shows how to share a query client with TanStack Router.
+The [TanStack Start example](https://github.com/brrock/trpcgo/tree/main/examples/start-trpc) shows how to share a query client with TanStack Router.
 
 ## Infinite Queries
 

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"example.com/crosspkg/domain"
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 // Role is an enum declared in the scanned package itself — the control case

@@ -12,14 +12,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/befabri/trpcgo"
-	"github.com/befabri/trpcgo/internal/analysis"
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/testdata/fieldcomposition"
-	amodels "github.com/befabri/trpcgo/testdata/namecollision/a/models"
-	bmodels "github.com/befabri/trpcgo/testdata/namecollision/b/models"
-	"github.com/befabri/trpcgo/testdata/typecontracts"
+	"github.com/brrock/trpcgo"
+	"github.com/brrock/trpcgo/internal/analysis"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/testdata/fieldcomposition"
+	amodels "github.com/brrock/trpcgo/testdata/namecollision/a/models"
+	bmodels "github.com/brrock/trpcgo/testdata/namecollision/b/models"
+	"github.com/brrock/trpcgo/testdata/typecontracts"
 )
 
 type GenPage[T any] struct {
@@ -452,7 +452,7 @@ func TestGenerateDisambiguatesSamePackageNames(t *testing.T) {
 		if static {
 			var procedures []analysis.Procedure
 			for _, prefix := range []string{"a", "b"} {
-				pkg := parseFixture(t, "github.com/befabri/trpcgo/testdata/namecollision/"+prefix+"/models", "testdata/namecollision/"+prefix+"/models/user.go")
+				pkg := parseFixture(t, "github.com/brrock/trpcgo/testdata/namecollision/"+prefix+"/models", "testdata/namecollision/"+prefix+"/models/user.go")
 				procedures = append(procedures, analysis.Procedure{Path: prefix + ".get", Type: "query", InputType: pkg.Scope().Lookup("User").Type(), OutputType: types.Typ[types.String]})
 			}
 			gen := codegen.Prepare(&analysis.Result{Procedures: procedures}, nil, nil)

@@ -13,9 +13,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/codegen"
-	"github.com/befabri/trpcgo/internal/fsutil"
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/fsutil"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // GenerateTS writes TypeScript type definitions for all registered procedures.
@@ -216,7 +216,7 @@ func reflectProcedureOutputTS(typ ProcedureType, output reflect.Type, defs *refl
 			t = t.Elem()
 		}
 		// httpSubscriptionLink wraps only the top-level stream item as { id, data }.
-		if t.PkgPath() == "github.com/befabri/trpcgo" && strings.HasPrefix(t.Name(), "TrackedEvent[") {
+		if t.PkgPath() == "github.com/brrock/trpcgo" && strings.HasPrefix(t.Name(), "TrackedEvent[") {
 			if field, ok := t.FieldByName("Data"); ok {
 				return "{ id: string; data: " + goTypeToTS(field.Type, defs) + " }"
 			}

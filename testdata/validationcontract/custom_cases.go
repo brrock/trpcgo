@@ -1,7 +1,7 @@
 package validationcontract
 
 import (
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 // CustomValidation pairs developer-supplied TypeScript predicates with the Go

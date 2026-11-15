@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func TestArrayOmissionPreservesWireChecksAndWidensLiterals(t *testing.T) {

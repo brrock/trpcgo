@@ -27,7 +27,7 @@ import (
 	"reflect"
 	"slices"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 // Case records the expected result of JSON decoding followed by Go validation.

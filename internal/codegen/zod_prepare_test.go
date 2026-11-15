@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 func numericGenericDefinitions() []typemap.TypeDef {

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 // TypeMeta carries AST-level metadata for a named Go type

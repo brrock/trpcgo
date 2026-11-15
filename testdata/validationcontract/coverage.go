@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // SupportedTags lists the validate tags the generator claims to translate.

@@ -10,15 +10,15 @@ trpcgo includes a Go runtime for serving procedures and a generator for frontend
 Run this in an existing Go module. For a new project, create one first with `go mod init example.com/myapp`.
 
 ```bash
-go get github.com/befabri/trpcgo@latest
+go get github.com/brrock/trpcgo@latest
 ```
 
 Import the runtime and HTTP protocol handler separately:
 
 ```go
 import (
-    "github.com/befabri/trpcgo"
-    "github.com/befabri/trpcgo/trpc"
+    "github.com/brrock/trpcgo"
+    "github.com/brrock/trpcgo/trpc"
 )
 ```
 
@@ -27,13 +27,13 @@ import (
 Add the generator to your module's tool dependencies:
 
 ```bash
-go get -tool github.com/befabri/trpcgo/cmd/trpcgo@latest
+go get -tool github.com/brrock/trpcgo/cmd/trpcgo@latest
 ```
 
 This adds a tool directive to `go.mod`:
 
 ```go
-tool github.com/befabri/trpcgo/cmd/trpcgo
+tool github.com/brrock/trpcgo/cmd/trpcgo
 ```
 
 Then run it with `go tool`:

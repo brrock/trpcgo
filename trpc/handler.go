@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 // Handler is an http.Handler that serves trpcgo procedures over the tRPC

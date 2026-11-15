@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/tstest"
+	"github.com/brrock/trpcgo/internal/tstest"
 )
 
 // zodMissing stands for an absent property in accept and reject lists.

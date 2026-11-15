@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 // requireErrorCode asserts that err is a *trpcgo.Error with the expected code.

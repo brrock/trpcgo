@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 // Unicode cases compute Valid with the running Go's tables, which validator

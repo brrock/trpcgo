@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/trpc"
+	"github.com/brrock/trpcgo/trpc"
 )
 
 func TestMethods_MatchWhatTheHandlerServes(t *testing.T) {

@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo/internal/tstest"
-	"github.com/befabri/trpcgo/internal/typemap"
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/internal/tstest"
+	"github.com/brrock/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/zodconfig"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -43,7 +43,7 @@ func writeWatchAnalysisModule(t *testing.T, source string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	gomod := "module example.com/watched\n\ngo 1.26.0\n\nrequire github.com/befabri/trpcgo v0.0.0\n\nreplace github.com/befabri/trpcgo => " + filepath.ToSlash(repoRoot) + "\n"
+	gomod := "module example.com/watched\n\ngo 1.26.0\n\nrequire github.com/brrock/trpcgo v0.0.0\n\nreplace github.com/brrock/trpcgo => " + filepath.ToSlash(repoRoot) + "\n"
 	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(gomod), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -451,7 +451,7 @@ func TestRegenerateFromSourceKeepsTypesWhenZodFails(t *testing.T) {
 import (
 	"context"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 type Input struct {
@@ -511,7 +511,7 @@ func TestRegenerateFromSourceRemovesStaleZodWhenNoTypedInputs(t *testing.T) {
 import (
 	"context"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 func Setup() *trpcgo.Router {

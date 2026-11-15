@@ -4,7 +4,7 @@
 
 trpcgo is a Go implementation of the [tRPC](https://trpc.io) protocol. You get the same end-to-end type safety as a TypeScript backend, but your server is written in Go. Define your API with Go structs and handlers, and trpcgo generates the TypeScript `AppRouter` type that plugs directly into `@trpc/client` and `@trpc/react-query`. No manual type syncing, no OpenAPI specs, no protobuf.
 
-See the [documentation](https://trpcgo.dev/docs/) for guides and the API reference.
+See the [documentation](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/docs.mdx) for guides and the API reference.
 
 ## Install
 
@@ -12,10 +12,10 @@ Requires Go 1.26+. Run these commands in your Go module:
 
 ```bash
 # Add the runtime library to your Go module
-go get github.com/befabri/trpcgo@latest
+go get github.com/brrock/trpcgo@latest
 
 # Add the code generator to go.mod's tool directives
-go get -tool github.com/befabri/trpcgo/cmd/trpcgo@latest
+go get -tool github.com/brrock/trpcgo/cmd/trpcgo@latest
 ```
 
 ## Quick Start
@@ -40,8 +40,8 @@ import (
     "log"
     "net/http"
 
-    "github.com/befabri/trpcgo"
-    "github.com/befabri/trpcgo/trpc"
+    "github.com/brrock/trpcgo"
+    "github.com/brrock/trpcgo/trpc"
     "github.com/go-playground/validator/v10"
 )
 
@@ -154,16 +154,16 @@ The Go handler above allows browser requests from `http://localhost:3000`. Use y
 
 ## Documentation
 
-The [documentation](https://trpcgo.dev/docs/) covers everything beyond the quick start:
+The [documentation](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/docs.mdx) covers everything beyond the quick start:
 
-- [Procedures](https://trpcgo.dev/procedures/): queries, mutations, subscriptions, base procedures, and output hooks.
-- [Router & Options](https://trpcgo.dev/router-options/): batching, strict input, body limits, validation, and router merging.
-- [Middleware & Metadata](https://trpcgo.dev/middleware/): middleware, typed metadata, request context, and server-side calls.
-- [Errors](https://trpcgo.dev/errors/): tRPC error codes, formatting, and logging.
-- [Struct Tags](https://trpcgo.dev/struct-tags/) and [Zod Schemas](https://trpcgo.dev/zod-schemas/): shape the generated TypeScript and validation.
-- [Code Generation](https://trpcgo.dev/code-generation/) and the [CLI](https://trpcgo.dev/reference/cli/): static generation, `go:generate`, and dev watch.
-- [Frontend Setup](https://trpcgo.dev/frontend-setup/): the vanilla client, React Query, and TanStack Query.
-- [Security & Production](https://trpcgo.dev/security-production/): CORS, request limits, and production settings.
+- [Procedures](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/procedures.md): queries, mutations, subscriptions, base procedures, and output hooks.
+- [Router & Options](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/router-options.md): batching, strict input, body limits, validation, and router merging.
+- [Middleware & Metadata](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/middleware.md): middleware, typed metadata, request context, and server-side calls.
+- [Errors](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/errors.md): tRPC error codes, formatting, and logging.
+- [Struct Tags](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/struct-tags.md) and [Zod Schemas](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/zod-schemas.md): shape the generated TypeScript and validation.
+- [Code Generation](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/code-generation.md) and the [CLI](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/reference/cli.md): static generation, `go:generate`, and dev watch.
+- [Frontend Setup](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/frontend-setup.md): the vanilla client, React Query, and TanStack Query.
+- [Security & Production](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/security-production.md): CORS, request limits, and production settings.
 
 ## Example
 
@@ -175,7 +175,7 @@ See [`examples/start-trpc/`](examples/start-trpc/) for a full working example wi
 - tRPC v11 client packages. The generated types import nothing, so you only install `@trpc/client`.
 - Zod 4.5.4 or newer if you use the generated schemas.
 
-See [Compatibility](https://trpcgo.dev/reference/compatibility/) for subscriptions, CORS, and serialization.
+See [Compatibility](https://github.com/brrock/trpcgo/blob/main/docs/src/content/docs/reference/compatibility.md) for subscriptions, CORS, and serialization.
 
 ## License
 

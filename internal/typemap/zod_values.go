@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/gojson"
+	"github.com/brrock/trpcgo/internal/gojson"
 )
 
 // HoistZodRuntimeHelpers extracts generated runtime helpers from a complete

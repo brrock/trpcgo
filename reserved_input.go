@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/befabri/trpcgo/internal/gojson"
+	"github.com/brrock/trpcgo/internal/gojson"
 )
 
 // tRPC clients add fields to procedure input that the Go input struct may not

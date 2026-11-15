@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/typemap/testdata/embedding"
+	"github.com/brrock/trpcgo/internal/typemap/testdata/embedding"
 )
 
 func TestEmbeddedFieldShadowedByOuterJSONField(t *testing.T) {

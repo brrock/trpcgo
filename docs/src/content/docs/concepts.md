@@ -44,7 +44,7 @@ trpcgo supports:
 
 ## HTTP Handler
 
-Package `github.com/befabri/trpcgo/trpc` exposes the tRPC-compatible HTTP handler:
+Package `github.com/brrock/trpcgo/trpc` exposes the tRPC-compatible HTTP handler:
 
 ```go
 mux.Handle("/trpc/", trpc.NewHandler(router))

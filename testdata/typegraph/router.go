@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 var registrations = map[string]func(*trpcgo.Router){}

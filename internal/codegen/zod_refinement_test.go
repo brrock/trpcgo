@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/befabri/trpcgo/internal/typemap"
+	"github.com/brrock/trpcgo/internal/typemap"
 )
 
 func TestRefinementUsesGoComparisonSemantics(t *testing.T) {

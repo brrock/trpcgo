@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/befabri/trpcgo/zodconfig"
+	"github.com/brrock/trpcgo/zodconfig"
 )
 
 // ValidationProgram expands aliases before field references and dive scopes

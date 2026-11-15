@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/tools/go/types/typeutil"
 
-	"github.com/befabri/trpcgo/internal/gojson"
+	"github.com/brrock/trpcgo/internal/gojson"
 )
 
 // TypeDefKind distinguishes what kind of TypeScript declaration to emit.
@@ -319,7 +319,7 @@ func (m *Mapper) convertSubscriptionOutput(t types.Type, convert func(types.Type
 	}
 	if named, ok := unwrapped.(*types.Named); ok {
 		obj := named.Obj()
-		if obj.Pkg() != nil && obj.Pkg().Path() == "github.com/befabri/trpcgo" && obj.Name() == "TrackedEvent" && named.TypeArgs().Len() == 1 {
+		if obj.Pkg() != nil && obj.Pkg().Path() == "github.com/brrock/trpcgo" && obj.Name() == "TrackedEvent" && named.TypeArgs().Len() == 1 {
 			return "{ id: string; data: " + convert(named.TypeArgs().At(0)) + " }"
 		}
 	}

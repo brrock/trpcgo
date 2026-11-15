@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/befabri/trpcgo"
+	"github.com/brrock/trpcgo"
 )
 
 type User struct {
