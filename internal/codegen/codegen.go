@@ -105,45 +105,32 @@ func WriteAppRouter(w io.Writer, procs []ProcEntry, defs []typemap.TypeDef) erro
 		usedTypes[p.ProcType] = true
 	}
 
-	// Import from @trpc/server (only include types actually used).
-	imports := []string{"TRPCRouterDef", "TRPCRouterCaller"}
-	if usedTypes["query"] {
-		imports = append(imports, "TRPCQueryProcedure")
-	}
-	if usedTypes["mutation"] {
-		imports = append(imports, "TRPCMutationProcedure")
-	}
-	if usedTypes["subscription"] {
-		imports = append(imports, "TRPCSubscriptionProcedure")
-	}
-	if len(procs) > 0 {
-		imports = append(imports, "inferRouterInputs", "inferRouterOutputs")
-	}
-	slices.Sort(imports)
-
-	ew.println("import type {")
-	for _, name := range imports {
-		ew.printf("  %s,\n", name)
-	}
-	ew.println("} from '@trpc/server';")
-	ew.println("")
-
 	// Type definitions (interfaces, unions, aliases).
 	for _, def := range defs {
 		writeTypeDef(ew, def)
 	}
 
-	// Procedure type aliases (only emit types that are used).
-	if usedTypes["query"] {
-		ew.println(`type $Query<TInput, TOutput> = TRPCQueryProcedure<{ input: TInput; output: TOutput; meta: object }>;`)
-	}
-	if usedTypes["mutation"] {
-		ew.println(`type $Mutation<TInput, TOutput> = TRPCMutationProcedure<{ input: TInput; output: TOutput; meta: object }>;`)
-	}
-	if usedTypes["subscription"] {
-		ew.println(`type $Subscription<TInput, TOutput> = TRPCSubscriptionProcedure<{ input: TInput; output: TOutput; meta: object }>;`)
-	}
+	// The router is described structurally, matching what @trpc/client infers
+	// from, so the frontend needs no @trpc/server import. $Inputs and $Outputs
+	// mirror tRPC's inferRouterInputs and inferRouterOutputs; $Json is its
+	// output serialization, narrowed to the JSON shapes Go produces.
 	if len(procs) > 0 {
+		ew.println(`type $Procedure<TType, TInput, TOutput> = {
+  _def: { $types: { input: TInput; output: TOutput; errorShape: $ErrorShape }; procedure: true; type: TType; meta: unknown; experimental_caller: never; inputs: never };
+  meta: object;
+  (opts: unknown): Promise<TOutput>;
+};
+type $Inputs<T> = { [K in keyof T]: T[K] extends { _def: { $types: { input: infer I } } } ? (undefined extends I ? I | void : I) : $Inputs<T[K]> };
+type $Outputs<T> = { [K in keyof T]: T[K] extends { _def: { $types: { output: infer O } } } ? $Json<O> : $Outputs<T[K]> };
+type $Json<T> = unknown extends T ? unknown
+  : T extends string | number | boolean | null ? T
+  : T extends readonly (infer U)[] ? $Json<U>[]
+  : { [K in keyof T as unknown extends T[K] ? never : K]: $Json<T[K]> } & { [K in keyof T as unknown extends T[K] ? K : never]?: unknown } extends infer O ? { [K in keyof O]: O[K] } : never;`)
+		for _, typ := range []string{"query", "mutation", "subscription"} {
+			if usedTypes[typ] {
+				ew.printf("type %s<TInput, TOutput> = $Procedure<'%s', TInput, TOutput>;\n", procHelper(typ), typ)
+			}
+		}
 		ew.println("")
 	}
 
@@ -154,37 +141,46 @@ func WriteAppRouter(w io.Writer, procs []ProcEntry, defs []typemap.TypeDef) erro
 
 	ew.print("type AppRouterRecord = ")
 	writeTreeNodes(ew, tree, 0, func(l procLeaf) string {
-		helper := "$Query"
-		switch l.procType {
-		case "mutation":
-			helper = "$Mutation"
-		case "subscription":
-			helper = "$Subscription"
-		}
-		return fmt.Sprintf("%s<%s, %s>", helper, l.inputTS, l.outputTS)
+		return fmt.Sprintf("%s<%s, %s>", procHelper(l.procType), l.inputTS, l.outputTS)
 	})
 	ew.println(";")
 	ew.println("")
 
-	// AppRouter using @trpc/server types.
+	// Runtime-only router fields are never: the router exists only in Go.
 	ew.print(`type $ErrorShape = { code: number; message: string; data: { code: string; httpStatus: number; path?: string } };
 type $RootTypes = { ctx: object; meta: object; errorShape: $ErrorShape; transformer: false };
 
 export type AppRouter = {
-  _def: TRPCRouterDef<$RootTypes, AppRouterRecord>;
-  createCaller: TRPCRouterCaller<$RootTypes, AppRouterRecord>;
+  _def: {
+    _config: { $types: $RootTypes; transformer: never; errorFormatter: never; allowOutsideOfServer: never; isServer: never; isDev: never; pathSeparator: never };
+    router: true;
+    procedures: AppRouterRecord;
+    record: AppRouterRecord;
+    lazy: never;
+  };
+  createCaller: never;
 };
 `)
 	ew.println("")
 
-	// RouterInputs / RouterOutputs via tRPC inference.
 	if len(procs) > 0 {
-		ew.println("export type RouterInputs = inferRouterInputs<AppRouter>;")
+		ew.println("export type RouterInputs = $Inputs<AppRouterRecord>;")
 		ew.println("")
-		ew.println("export type RouterOutputs = inferRouterOutputs<AppRouter>;")
+		ew.println("export type RouterOutputs = $Outputs<AppRouterRecord>;")
 	}
 
 	return ew.err
+}
+
+// procHelper names the generated alias for a procedure type.
+func procHelper(procType string) string {
+	switch procType {
+	case "mutation":
+		return "$Mutation"
+	case "subscription":
+		return "$Subscription"
+	}
+	return "$Query"
 }
 
 func writeTypeDef(ew *errWriter, def typemap.TypeDef) {

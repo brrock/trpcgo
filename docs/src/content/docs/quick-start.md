@@ -134,7 +134,7 @@ export const CreateUserInputSchema = z.strictObject({
 In your frontend project, install the client packages and Zod:
 
 ```bash
-npm install @trpc/client@11 @trpc/server@11 zod@^4.5.4
+npm install @trpc/client@11 zod@^4.5.4
 ```
 
 The following example assumes the calling file is `web/client.ts`, next to the `gen` directory. If your frontend lives elsewhere, adjust the Go output paths and these imports to match.

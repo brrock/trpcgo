@@ -52,22 +52,22 @@ The generator looks for procedure registrations in the selected Go packages. If 
 Install the tRPC client packages used by your frontend framework. For a vanilla client:
 
 ```bash
-npm install @trpc/client@11 @trpc/server@11
+npm install @trpc/client@11
 ```
 
 For React Query:
 
 ```bash
-npm install @trpc/client@11 @trpc/server@11 @trpc/react-query@11 @tanstack/react-query@5
+npm install @trpc/client@11 @trpc/react-query@11 @tanstack/react-query@5
 ```
 
 For the TanStack React Query helper API shown in [Frontend Setup](/frontend-setup/):
 
 ```bash
-npm install @trpc/client@11 @trpc/server@11 @trpc/tanstack-react-query@11 @tanstack/react-query@5
+npm install @trpc/client@11 @trpc/tanstack-react-query@11 @tanstack/react-query@5
 ```
 
-Keep your `@trpc/*` packages on matching versions. The generated router type imports from `@trpc/server`, so your frontend needs that package even though the API server runs in Go.
+Keep your `@trpc/*` packages on matching versions. The generated router type imports nothing, so you do not install `@trpc/server`.
 
 Install Zod if you generate schemas:
 

@@ -658,14 +658,14 @@ func TestZodMutualCycle(t *testing.T) {
 func TestRouterInputsOutputs(t *testing.T) {
 	output := generateFromFixture(t, "basic")
 
-	t.Run("RouterInputs uses inferRouterInputs", func(t *testing.T) {
-		if !strings.Contains(output, "export type RouterInputs = inferRouterInputs<AppRouter>;") {
+	t.Run("RouterInputs maps the record", func(t *testing.T) {
+		if !strings.Contains(output, "export type RouterInputs = $Inputs<AppRouterRecord>;") {
 			t.Fatalf("output missing RouterInputs declaration.\nOutput:\n%s", output)
 		}
 	})
 
-	t.Run("RouterOutputs uses inferRouterOutputs", func(t *testing.T) {
-		if !strings.Contains(output, "export type RouterOutputs = inferRouterOutputs<AppRouter>;") {
+	t.Run("RouterOutputs maps the record", func(t *testing.T) {
+		if !strings.Contains(output, "export type RouterOutputs = $Outputs<AppRouterRecord>;") {
 			t.Fatalf("output missing RouterOutputs declaration.\nOutput:\n%s", output)
 		}
 	})
@@ -693,37 +693,11 @@ func TestRouterInputsOutputs(t *testing.T) {
 	})
 }
 
-func TestAppRouterImportStatement(t *testing.T) {
+func TestAppRouterHasNoImports(t *testing.T) {
 	output := generateFromFixture(t, "basic")
-
-	t.Run("import from @trpc/server", func(t *testing.T) {
-		if !strings.Contains(output, "from '@trpc/server';") {
-			t.Fatalf("output missing @trpc/server import.\nOutput:\n%s", output)
-		}
-	})
-
-	t.Run("imports all used procedure types", func(t *testing.T) {
-		// The basic fixture uses query, mutation, and subscription.
-		for _, typ := range []string{"TRPCQueryProcedure", "TRPCMutationProcedure", "TRPCSubscriptionProcedure"} {
-			if !strings.Contains(output, typ) {
-				t.Errorf("import missing %s.\nOutput:\n%s", typ, output)
-			}
-		}
-	})
-
-	t.Run("imports router plumbing types", func(t *testing.T) {
-		for _, typ := range []string{"TRPCRouterDef", "TRPCRouterCaller", "inferRouterInputs", "inferRouterOutputs"} {
-			if !strings.Contains(output, typ) {
-				t.Errorf("import missing %s.\nOutput:\n%s", typ, output)
-			}
-		}
-	})
-
-	t.Run("import is type-only", func(t *testing.T) {
-		if !strings.Contains(output, "import type {") {
-			t.Errorf("import should be type-only.\nOutput:\n%s", output)
-		}
-	})
+	if strings.Contains(output, "import ") || strings.Contains(output, "@trpc/") {
+		t.Fatalf("generated router must be self-contained.\nOutput:\n%s", output)
+	}
 }
 
 func TestAppRouterHelperTypes(t *testing.T) {
@@ -743,15 +717,11 @@ func TestAppRouterHelperTypes(t *testing.T) {
 		}
 	})
 
-	t.Run("AppRouter uses TRPCRouterDef", func(t *testing.T) {
-		if !strings.Contains(output, "TRPCRouterDef<$RootTypes, AppRouterRecord>") {
-			t.Errorf("AppRouter should use TRPCRouterDef.\nOutput:\n%s", output)
-		}
-	})
-
-	t.Run("AppRouter uses TRPCRouterCaller", func(t *testing.T) {
-		if !strings.Contains(output, "TRPCRouterCaller<$RootTypes, AppRouterRecord>") {
-			t.Errorf("AppRouter should use TRPCRouterCaller.\nOutput:\n%s", output)
+	t.Run("AppRouter describes the record", func(t *testing.T) {
+		for _, want := range []string{"procedures: AppRouterRecord;", "record: AppRouterRecord;", "$types: $RootTypes;"} {
+			if !strings.Contains(output, want) {
+				t.Errorf("AppRouter missing %q.\nOutput:\n%s", want, output)
+			}
 		}
 	})
 
@@ -790,17 +760,6 @@ func TestWriteAppRouterSubscriptionOnly(t *testing.T) {
 	}
 	output := buf.String()
 
-	// Should import TRPCSubscriptionProcedure but NOT query/mutation.
-	if !strings.Contains(output, "TRPCSubscriptionProcedure") {
-		t.Errorf("should import TRPCSubscriptionProcedure.\nOutput:\n%s", output)
-	}
-	if strings.Contains(output, "TRPCQueryProcedure") {
-		t.Errorf("should not import TRPCQueryProcedure for subscription-only router.\nOutput:\n%s", output)
-	}
-	if strings.Contains(output, "TRPCMutationProcedure") {
-		t.Errorf("should not import TRPCMutationProcedure for subscription-only router.\nOutput:\n%s", output)
-	}
-
 	// Should emit $Subscription but not $Query/$Mutation.
 	if !strings.Contains(output, "$Subscription<void, Message>") {
 		t.Errorf("should emit $Subscription.\nOutput:\n%s", output)
@@ -820,8 +779,8 @@ func TestWriteAppRouterNoProcs(t *testing.T) {
 	}
 	output := buf.String()
 
-	if strings.Contains(output, "TRPCQueryProcedure") {
-		t.Errorf("TRPCQueryProcedure should not be imported with no procedures.\nOutput:\n%s", output)
+	if strings.Contains(output, "$Procedure") {
+		t.Errorf("$Procedure should not be emitted with no procedures.\nOutput:\n%s", output)
 	}
 	if strings.Contains(output, "$Query") {
 		t.Errorf("$Query should not be emitted with no procedures.\nOutput:\n%s", output)
@@ -848,14 +807,8 @@ func TestWriteAppRouterOnlyEmitsUsedProcTypes(t *testing.T) {
 	}
 	output := buf.String()
 
-	if !strings.Contains(output, "TRPCQueryProcedure") {
-		t.Errorf("TRPCQueryProcedure should be imported when query procs exist.\nOutput:\n%s", output)
-	}
 	if !strings.Contains(output, "$Query") {
 		t.Errorf("$Query should be emitted for query proc.\nOutput:\n%s", output)
-	}
-	if strings.Contains(output, "TRPCMutationProcedure") {
-		t.Errorf("TRPCMutationProcedure should not be imported when no mutation procs exist.\nOutput:\n%s", output)
 	}
 	if strings.Contains(output, "$Mutation") {
 		t.Errorf("$Mutation should not be emitted when no mutation procs exist.\nOutput:\n%s", output)

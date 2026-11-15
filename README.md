@@ -130,7 +130,7 @@ export const CreateUserInputSchema = z.strictObject({
 Install the frontend dependencies in your frontend project:
 
 ```bash
-npm install @trpc/client@11 @trpc/server@11
+npm install @trpc/client@11
 ```
 
 For example, in `web/client.ts`:
@@ -172,7 +172,7 @@ See [`examples/start-trpc/`](examples/start-trpc/) for a full working example wi
 ## Compatibility
 
 - Go 1.26 or newer.
-- tRPC v11 client packages. Install `@trpc/server` alongside `@trpc/client` for the generated type imports, even though your server runs in Go.
+- tRPC v11 client packages. The generated types import nothing, so you only install `@trpc/client`.
 - Zod 4.5.4 or newer if you use the generated schemas.
 
 See [Compatibility](https://trpcgo.dev/reference/compatibility/) for subscriptions, CORS, and serialization.

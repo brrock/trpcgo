@@ -1754,8 +1754,7 @@ func TestGenerateTS(t *testing.T) {
 		for _, s := range []string{
 			"export type AppRouter =",
 			"type AppRouterRecord =",
-			"TRPCRouterDef<$RootTypes, AppRouterRecord>",
-			"TRPCRouterCaller<$RootTypes, AppRouterRecord>",
+			"procedures: AppRouterRecord;",
 		} {
 			if !strings.Contains(output, s) {
 				t.Errorf("missing %q:\n%s", s, output)

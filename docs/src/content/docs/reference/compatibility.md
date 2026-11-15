@@ -15,7 +15,7 @@ Generate with the Go toolchain that builds your server, and regenerate after cha
 
 Generated router types target tRPC v11 client packages.
 
-The generated `AppRouter` type imports from `@trpc/server`, which should be installed in the frontend package alongside `@trpc/client`. Keep both packages on the same v11 version. The server package supplies TypeScript types; your server still runs in Go.
+The generated `AppRouter` type is self-contained: it imports nothing, so your frontend only depends on `@trpc/client`. Your package manager installs `@trpc/server` automatically as a peer dependency of `@trpc/client`; you do not add it yourself.
 
 ### Subscription Limitations
 
