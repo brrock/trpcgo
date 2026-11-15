@@ -29,6 +29,9 @@ type ClientUser = {
 type GetOutputContract = Assert<Equal<RouterOutputs['user']['get'], ClientUser>>;
 type CreateOutputContract = Assert<Equal<RouterOutputs['user']['create'], ClientUser>>;
 type ListOutputContract = Assert<Equal<RouterOutputs['user']['list'], ClientUser[]>>;
+// A nil pointer result reaches the client as null.
+type MeOutputContract = Assert<Equal<RouterOutputs['user']['me'], ClientUser | null>>;
+type FindOutputContract = Assert<Equal<RouterOutputs['user']['find'], ClientUser | null>>;
 
 const client = createTRPCClient<AppRouter>({ links: [] });
 
@@ -77,5 +80,14 @@ client.user.events.subscribe(undefined, { onData(event) {
   // @ts-expect-error tracked ids must not widen to any
   const id: number = event.id;
 } });
+client.user.presence.subscribe(undefined, { onData(user) {
+  type PresenceUser = Assert<Equal<typeof user, ClientUser | null>>;
+} });
+client.user.changes.subscribe(undefined, { onData(event) {
+  type ChangedUser = Assert<Equal<typeof event.data, ClientUser | null>>;
+} });
+const me = await client.user.me.query();
+// @ts-expect-error a pointer output must be narrowed before use
+me.name;
 // @ts-expect-error subscriptions must not expose query calls
 client.user.events.query();

@@ -39,6 +39,8 @@ Pointer fields are optional even without `omitempty`. For named structs, `valida
 
 Optional fields allow omission; they do not automatically include `null`. A nil pointer without `omitempty` can still encode as JSON `null`. Use `omitempty` when nil means “leave this field out,” or explicitly model a nullable TypeScript field when `null` is part of your API.
 
+These rules cover struct fields and inputs. A pointer procedure output generates `T | null` instead; see [Code Generation](/code-generation/#type-mapping).
+
 ## TypeScript Overrides
 
 Use `tstype` when Go's default type mapping needs help.

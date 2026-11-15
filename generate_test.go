@@ -10,6 +10,7 @@ import (
 	"go/types"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/brrock/trpcgo"
@@ -438,6 +439,45 @@ func TestGeneratedClientContracts(t *testing.T) {
 				}
 			}
 			assertTypeScriptCompiles(t, dir, "client.ts", "schemas.contract.ts")
+		})
+	}
+}
+
+// A nil pointer result encodes as JSON null, so both mappers must declare it.
+// This checks the text without Node; TestGeneratedClientContracts checks the
+// types @trpc/client infers from it.
+func TestGeneratePointerOutputsNullable(t *testing.T) {
+	fixture := filepath.Join("testdata", "typecontracts")
+	for _, static := range []bool{false, true} {
+		t.Run(mapperName(static), func(t *testing.T) {
+			var ts string
+			if static {
+				result, err := analysis.Analyze([]string{"."}, fixture)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var buf bytes.Buffer
+				if _, err := codegen.Generate(&buf, result, result.TypeMetas, nil); err != nil {
+					t.Fatal(err)
+				}
+				ts = buf.String()
+			} else {
+				r := typecontracts.NewRouter()
+				t.Cleanup(func() { _ = r.Close() })
+				ts = generateTS(t, r)
+			}
+			for _, want := range []string{
+				"me: $Query<void, User | null>;",
+				"find: $Query<GetUserInput, User | null>;",
+				"presence: $Subscription<void, User | null>;",
+				"changes: $Subscription<void, { id: string; data: User | null }>;",
+				"get: $Query<GetUserInput, User>;",
+				"nickname?: string;",
+			} {
+				if !strings.Contains(ts, want) {
+					t.Errorf("generated TS missing %q:\n%s", want, ts)
+				}
+			}
 		})
 	}
 }

@@ -218,11 +218,21 @@ func reflectProcedureOutputTS(typ ProcedureType, output reflect.Type, defs *refl
 		// httpSubscriptionLink wraps only the top-level stream item as { id, data }.
 		if t.PkgPath() == "github.com/brrock/trpcgo" && strings.HasPrefix(t.Name(), "TrackedEvent[") {
 			if field, ok := t.FieldByName("Data"); ok {
-				return "{ id: string; data: " + goTypeToTS(field.Type, defs) + " }"
+				return "{ id: string; data: " + reflectNullableOutputTS(field.Type, defs) + " }"
 			}
 		}
 	}
-	return goTypeToTS(output, defs)
+	return reflectNullableOutputTS(output, defs)
+}
+
+// reflectNullableOutputTS converts a result type. A pointer result becomes
+// T | null because a nil pointer encodes as JSON null.
+func reflectNullableOutputTS(t reflect.Type, defs *reflectDefs) string {
+	ts := goTypeToTS(t, defs)
+	if t.Kind() == reflect.Pointer && ts != "unknown" {
+		return ts + " | null"
+	}
+	return ts
 }
 
 var reflectKindTS = map[reflect.Kind]string{

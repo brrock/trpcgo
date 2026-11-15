@@ -51,5 +51,18 @@ func NewRouter(opts ...trpcgo.Option) *trpcgo.Router {
 	trpcgo.MustVoidSubscribe(r, "user.events", func(context.Context) (<-chan trpcgo.TrackedEvent[User], error) {
 		return nil, nil
 	})
+	// A nil pointer result encodes as JSON null, so these outputs are nullable.
+	trpcgo.MustVoidQuery(r, "user.me", func(context.Context) (*User, error) {
+		return nil, nil
+	})
+	trpcgo.MustQuery(r, "user.find", func(context.Context, GetUserInput) (User, error) {
+		return User{}, nil
+	}, trpcgo.OutputParser(func(u User) (*User, error) { return &u, nil }))
+	trpcgo.MustVoidSubscribe(r, "user.presence", func(context.Context) (<-chan *User, error) {
+		return nil, nil
+	})
+	trpcgo.MustVoidSubscribe(r, "user.changes", func(context.Context) (<-chan trpcgo.TrackedEvent[*User], error) {
+		return nil, nil
+	})
 	return r
 }

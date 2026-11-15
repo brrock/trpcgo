@@ -299,9 +299,28 @@ func (m *Mapper) Convert(t types.Type) string {
 	return m.convert(t)
 }
 
+// ConvertOutput converts a query or mutation result type. A pointer result
+// becomes T | null because a nil pointer encodes as JSON null.
+func (m *Mapper) ConvertOutput(t types.Type) string {
+	return nullableOutput(t, m.convert)
+}
+
+// ConvertOutputZod is [Mapper.ConvertOutput] for [Mapper.ConvertZod].
+func (m *Mapper) ConvertOutputZod(t types.Type) string {
+	return nullableOutput(t, m.ConvertZod)
+}
+
+func nullableOutput(t types.Type, convert func(types.Type) string) string {
+	ts := convert(t)
+	if _, ok := t.Underlying().(*types.Pointer); ok && ts != "unknown" {
+		return ts + " | null"
+	}
+	return ts
+}
+
 // ConvertSubscriptionOutput returns the TypeScript type httpSubscriptionLink
 // delivers to onData: a top-level TrackedEvent[T] becomes
-// { id: string; data: T }, and any other type converts as usual.
+// { id: string; data: T }, and any other type converts as [Mapper.ConvertOutput].
 func (m *Mapper) ConvertSubscriptionOutput(t types.Type) string {
 	return m.convertSubscriptionOutput(t, m.convert)
 }
@@ -320,10 +339,10 @@ func (m *Mapper) convertSubscriptionOutput(t types.Type, convert func(types.Type
 	if named, ok := unwrapped.(*types.Named); ok {
 		obj := named.Obj()
 		if obj.Pkg() != nil && obj.Pkg().Path() == "github.com/brrock/trpcgo" && obj.Name() == "TrackedEvent" && named.TypeArgs().Len() == 1 {
-			return "{ id: string; data: " + convert(named.TypeArgs().At(0)) + " }"
+			return "{ id: string; data: " + nullableOutput(named.TypeArgs().At(0), convert) + " }"
 		}
 	}
-	return convert(t)
+	return nullableOutput(t, convert)
 }
 
 func (m *Mapper) convert(t types.Type) string {

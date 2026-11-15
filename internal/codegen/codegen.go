@@ -49,8 +49,8 @@ func Prepare(result *analysis.Result, metas map[string]typemap.TypeMeta, validat
 			outputTS = mapper.ConvertSubscriptionOutput(p.OutputType)
 			outputZod = mapper.ConvertSubscriptionOutputZod(p.OutputType)
 		} else {
-			outputTS = mapper.Convert(p.OutputType)
-			outputZod = mapper.ConvertZod(p.OutputType)
+			outputTS = mapper.ConvertOutput(p.OutputType)
+			outputZod = mapper.ConvertOutputZod(p.OutputType)
 		}
 		if outputZod == outputTS {
 			outputZod = ""
@@ -462,6 +462,11 @@ func publicGoArrayTypes(procs []ProcEntry, defs []typemap.TypeDef) ([]ProcEntry,
 	procs = slices.Clone(procs)
 	var procedureType func(string, string) string
 	procedureType = func(public, metadata string) string {
+		if public, ok := strings.CutSuffix(public, " | null"); ok {
+			if metadata, ok := strings.CutSuffix(metadata, " | null"); ok {
+				return procedureType(public, metadata) + " | null"
+			}
+		}
 		if concrete[metadata] {
 			return variant(metadata, false)
 		}

@@ -153,8 +153,11 @@ Common Go-to-TypeScript mappings:
 | `json.RawMessage` | `unknown` |
 | `json.Number` | `number` |
 | `TrackedEvent[T]` subscription item | `{ id: string; data: T }` |
+| `*T` procedure output or subscription item | `T \| null` |
 
 For subscriptions, `TrackedEvent[T]` and `*TrackedEvent[T]` generate the `{ id, data }` value that `httpSubscriptionLink` passes to `onData`. In query results, inputs, or nested fields, `TrackedEvent[T]` keeps its Go JSON fields: `ID`, `Retry`, and `Data`.
+
+A pointer procedure output can be nil, which tRPC delivers as JSON `null`, so `*T` as a query or mutation result, an `OutputParser` result, a subscription item, or the `T` in a subscription's `TrackedEvent[T]` generates `T | null`. `RouterOutputs` and `onData` then require narrowing. A subscription's `*TrackedEvent[T]` stays `{ id, data }`. Pointer inputs and pointer struct fields follow the optionality rules below instead.
 
 Pointer fields and fields tagged `omitempty` or `omitzero` become optional. On named structs, `validate:"required"` or `tstype:",required"` makes them required. See [Struct Tags](/struct-tags/) for optionality and JSON null handling.
 
