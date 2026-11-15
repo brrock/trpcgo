@@ -183,7 +183,8 @@ func zodWrapFixedArray(schema string, field, element typemap.Field) string {
 	if field.ArrayLen == nil {
 		return schema
 	}
-	return "$goFixedArray(" + schema + ", " + strconv.FormatInt(*field.ArrayLen, 10) + ", () => " + zodZeroValue(element) + ", (value, previous) => " + zodMergePredicate(element, "value", "previous") + ")"
+	decode := zodMergePredicate(element, "value", "previous")
+	return "$goFixedArray(" + schema + ", " + strconv.FormatInt(*field.ArrayLen, 10) + ", () => " + zodZeroValue(element) + ", (value, " + typemap.TSParam("previous", decode) + ") => " + decode + ")"
 }
 
 // Fixed-array decoding creates complete Go zero values, including nil pointers,

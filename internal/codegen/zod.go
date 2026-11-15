@@ -169,9 +169,7 @@ func WriteZodSchemas(w io.Writer, procs []ProcEntry, defs []typemap.TypeDef, sty
 	writeZodJSONDecoder(ew, plan.Order, defsByName)
 
 	helpers, body := typemap.HoistZodRuntimeHelpers(emitter.checks.declarations() + generated.String())
-	output.print(customDeclarations)
-	output.print(helpers)
-	output.print(body)
+	output.print(pruneUnusedDeclarations(customDeclarations + helpers + body))
 	return output.err
 }
 
@@ -308,11 +306,12 @@ func (e zodSchemaEmitter) writeObjectExpression(ew *errWriter, def typemap.TypeD
 		} else {
 			ew.print(".refine(\n")
 		}
-		dataParam := "(data)"
+		predicate := zodRefinementPredicate(ref, fields, e.checks)
+		dataParam := typemap.TSParam("data", predicate)
 		if style == typemap.ZodMini {
-			dataParam = "(data: any)"
+			dataParam += ": any"
 		}
-		ew.printf("  %s => %s,\n", dataParam, zodRefinementPredicate(ref, fields, e.checks))
+		ew.printf("  (%s) => %s,\n", dataParam, predicate)
 		message := zodRefinementMessage(ref)
 		ew.printf("  { message: %s, path: [%s] }\n", typemap.ZodStringLiteral(message), typemap.ZodStringLiteral(ref.Field))
 		if style == typemap.ZodMini {
@@ -343,7 +342,8 @@ func (e zodSchemaEmitter) structRuleChecks(name string) string {
 		if message == "" {
 			message = "Custom struct validation failed"
 		}
-		fmt.Fprintf(&checks, ".check(z.refine((data) => %s, { message: %s, path: [%s] }))", typemap.ZodCustomPredicate(rule.Predicate, "data"), typemap.ZodStringLiteral(message), strings.Join(path, ", "))
+		predicate := typemap.ZodCustomPredicate(rule.Predicate, "data")
+		fmt.Fprintf(&checks, ".check(z.refine((%s) => %s, { message: %s, path: [%s] }))", typemap.TSParam("data", predicate), predicate, typemap.ZodStringLiteral(message), strings.Join(path, ", "))
 	}
 	return checks.String()
 }

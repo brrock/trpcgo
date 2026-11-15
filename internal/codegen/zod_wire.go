@@ -486,7 +486,7 @@ function $goMergeArray(raw: unknown, previous: unknown, decode: $GoJSONDecoder):
 		default:
 			expression = "value === null && previous !== undefined ? previous : value"
 		}
-		ew.printf("function $goMerge%s(value: unknown, previous: unknown): unknown { return %s; }\n", name, expression)
+		ew.printf("function $goMerge%s(value: unknown, %s: unknown): unknown { return %s; }\n", name, typemap.TSParam("previous", expression), expression)
 	}
 	ew.println("")
 }
@@ -498,7 +498,7 @@ func zodMergeObjectExpression(def typemap.TypeDef, value, previous string) strin
 		if !field.ZodOmit {
 			decode = zodMergePredicate(field, "item", "prior")
 		}
-		fields = append(fields, "["+typemap.ZodStringLiteral(field.Name)+", (item: unknown, prior: unknown) => "+decode+"]")
+		fields = append(fields, "["+typemap.ZodStringLiteral(field.Name)+", (item: unknown, "+typemap.TSParam("prior", decode)+": unknown) => "+decode+"]")
 	}
 	return "$goMergeObject(" + value + ", " + previous + ", [" + strings.Join(fields, ", ") + "])"
 }
@@ -514,9 +514,11 @@ func zodMergePredicate(field typemap.Field, value, previous string) string {
 	default:
 		if element, ok := strings.CutSuffix(ts, "[]"); ok {
 			child := zodElementField(unwrapZodParentheses(element), field.Element)
-			expression = "$goMergeArray(" + value + ", " + previous + ", (item, prior) => " + zodMergePredicate(child, "item", "prior") + ")"
+			decode := zodMergePredicate(child, "item", "prior")
+			decode = "(item, " + typemap.TSParam("prior", decode) + ") => " + decode
+			expression = "$goMergeArray(" + value + ", " + previous + ", " + decode + ")"
 			if field.ArrayLen != nil {
-				expression = "$goMergeFixedArray(" + value + ", " + previous + ", " + strconv.FormatInt(*field.ArrayLen, 10) + ", () => " + zodZeroValue(child) + ", (item, prior) => " + zodMergePredicate(child, "item", "prior") + ")"
+				expression = "$goMergeFixedArray(" + value + ", " + previous + ", " + strconv.FormatInt(*field.ArrayLen, 10) + ", () => " + zodZeroValue(child) + ", " + decode + ")"
 			}
 		} else if _, element, record := zodRecordTypes(ts); record {
 			expression = "$goMergeMap(" + value + ", " + previous + ")"

@@ -234,25 +234,6 @@ function $goWireObject(value: unknown, path: readonly PropertyKey[], fields: Rec
   }
   return undefined;
 }
-function $goWireMap(value: unknown, path: readonly PropertyKey[], key: $GoCheck | undefined, element: $GoWire): $GoWireFailure | undefined {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) return $goWireKind("record", value, path);
-  for (const [name, item] of $goJSONEntries(value) ?? Object.entries(value)) {
-    if (key !== undefined && !key(name)) return { path: [...path, name], issues: [{ code: "invalid_key", origin: "record", issues: key.issues(name), input: name }] };
-    const failure = element(item, [...path, name]);
-    if (failure) return failure;
-  }
-  return undefined;
-}
-// encoding/json skips the elements beyond a fixed array's length.
-function $goWireArray(value: unknown, path: readonly PropertyKey[], length: number | undefined, element: $GoWire): $GoWireFailure | undefined {
-  if (!Array.isArray(value)) return $goWireKind("array", value, path);
-  const count = length === undefined ? value.length : Math.min(length, value.length);
-  for (let index = 0; index < count; index++) {
-    const failure = element(value[index], [...path, index]);
-    if (failure) return failure;
-  }
-  return undefined;
-}
 function $goWireEmail(value: unknown, path: readonly PropertyKey[]): $GoWireFailure | undefined { return (value == null ? undefined : $goWireValue($goCheck0, value, path)); }
 function $goWireRole(value: unknown, path: readonly PropertyKey[]): $GoWireFailure | undefined { return (value == null ? undefined : $goWireValue($goCheck0, value, path)); }
 function $goWireCreateUserInput(value: unknown, path: readonly PropertyKey[]): $GoWireFailure | undefined { return value == null ? undefined : $goWireObject(value, path, {["name"]: (item: unknown, path: readonly PropertyKey[]) => (item == null ? undefined : $goWireValue($goCheck0, item, path)), ["email"]: (item: unknown, path: readonly PropertyKey[]) => (item == null ? undefined : $goWireValue($goCheck0, item, path)), ["role"]: (item: unknown, path: readonly PropertyKey[]) => (item == null ? undefined : $goWireValue($goCheck0, item, path)), ["bio"]: (item: unknown, path: readonly PropertyKey[]) => (item == null ? undefined : $goWireValue($goCheck0, item, path))}); }
@@ -283,20 +264,6 @@ function $goFoldName(name: string): string {
   return folded;
 }
 
-// A fixed-array element decodes into its Go zero value, so an element object
-// is merged onto that value before its schema validates it.
-function $goDecodeStruct<S extends z.core.$ZodType>(schema: S, wire: $GoWire, decode: (value: unknown) => unknown) {
-  return z.pipe(z.transform<z.core.input<S>, unknown>((input, ctx) => {
-    if (input === null || typeof input !== "object") return input;
-    const failure = wire(input, []);
-    if (failure) {
-      ctx.issues.push(...$goWireIssues(failure));
-      return input;
-    }
-    return decode(input);
-  }), schema);
-}
-
 function $goMergeObject(raw: unknown, previous: unknown, fields: readonly (readonly [string, $GoJSONDecoder])[]): unknown {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const entries = $goJSONEntries(raw);
@@ -314,46 +281,9 @@ function $goMergeObject(raw: unknown, previous: unknown, fields: readonly (reado
   return entries ? $goJSONObject(Array.from(values)) : Object.fromEntries(values);
 }
 
-// Go decodes every map entry into a fresh zero value, so an entry never merges
-// with an earlier entry for the same key, but its own value still decodes.
-function $goMergeMap(raw: unknown, previous: unknown, decode?: (value: unknown) => unknown): unknown {
-  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const source = $goJSONEntries(raw);
-  if (!source) return raw;
-  const entries = decode === undefined ? source : source.map(([name, value]) => [name, decode(value)] as const);
-  if (previous === null || typeof previous !== "object" || Array.isArray(previous)) return $goJSONObject(entries);
-  const prior = $goJSONEntries(previous);
-  if (prior) return $goJSONObject([...prior, ...entries]);
-  // Stale or ordinary objects cannot grant trustworthy alias ordering to a
-  // combined map. Keep it ordinary so the map schema retains its ambiguity policy.
-  const merged: { [key: string]: unknown } = {};
-  for (const [name, value] of [...Object.entries(previous), ...entries]) {
-    Object.defineProperty(merged, name, { value, enumerable: true, writable: true, configurable: true });
-  }
-  return merged;
-}
-
-// encoding/json reuses a slice's element storage while resetting its length.
-// Keep truncated elements privately until a later occurrence grows the slice;
-// an explicit empty array creates new zero-capacity storage in Go.
-const $goArrayStorage = /* @__PURE__ */ new WeakMap<unknown[], unknown[]>();
-function $goMergeArray(raw: unknown, previous: unknown, decode: $GoJSONDecoder): unknown {
-  if (!Array.isArray(raw)) return raw;
-  if (raw.length === 0) return [];
-  const prior = Array.isArray(previous) ? ($goArrayStorage.get(previous) ?? previous) : [];
-  const storage = prior.slice();
-  const result = raw.map((item, index) => {
-    const value = decode(item, prior[index]);
-    storage[index] = value;
-    return value;
-  });
-  $goArrayStorage.set(result, storage);
-  return result;
-}
-
 function $goMergeEmail(value: unknown, previous: unknown): unknown { return (value === null && previous !== undefined ? previous : value); }
 function $goMergeRole(value: unknown, previous: unknown): unknown { return value === null && previous !== undefined ? previous : value; }
-function $goMergeCreateUserInput(value: unknown, previous: unknown): unknown { return $goMergeObject(value, previous, [["name", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : item)], ["email", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : $goMergeEmail(item, prior))], ["role", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : $goMergeRole(item, prior))], ["bio", (item: unknown, prior: unknown) => (item === null ? item : item)]]); }
+function $goMergeCreateUserInput(value: unknown, previous: unknown): unknown { return $goMergeObject(value, previous, [["name", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : item)], ["email", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : $goMergeEmail(item, prior))], ["role", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : $goMergeRole(item, prior))], ["bio", (item: unknown, _prior: unknown) => (item === null ? item : item)]]); }
 function $goMergeDeleteUserInput(value: unknown, previous: unknown): unknown { return $goMergeObject(value, previous, [["id", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : item)]]); }
 function $goMergeGetUserInput(value: unknown, previous: unknown): unknown { return $goMergeObject(value, previous, [["id", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : item)]]); }
 function $goMergeListUsersInput(value: unknown, previous: unknown): unknown { return $goMergeObject(value, previous, [["page", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : item)], ["perPage", (item: unknown, prior: unknown) => (item === null && prior !== undefined ? prior : item)]]); }

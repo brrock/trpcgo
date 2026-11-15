@@ -1376,6 +1376,8 @@ func TestGenerateTSTsc(t *testing.T) {
 	tsconfig := `{
   "compilerOptions": {
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
     "target": "ES2022",
     "module": "ES2022",
@@ -1422,6 +1424,8 @@ func TestGenerateEnumsTsc(t *testing.T) {
 	tsconfig := `{
   "compilerOptions": {
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
     "target": "ES2022",
     "module": "ES2022",
@@ -1529,6 +1533,8 @@ func TestGenerateTSTscExtended(t *testing.T) {
 	tsconfig := `{
   "compilerOptions": {
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
     "target": "ES2022",
     "module": "ES2022",
@@ -1605,6 +1611,8 @@ void addr; void nums; void tree; void bools; void base; void user; void doc;
 	tsconfig := `{
   "compilerOptions": {
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
     "target": "ES2022",
     "module": "ES2022",

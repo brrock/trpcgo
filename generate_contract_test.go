@@ -817,3 +817,63 @@ for (const invalid of [{ ...valid, validMap: { bad: 1 } }, { ...valid, validMap:
 `)
 	})
 }
+
+type FlatSignupInput struct {
+	Username string `json:"username" validate:"required,min=3,max=32,alphanum"`
+	Password string `json:"password" validate:"required,min=8,max=256"`
+}
+
+type FlatChangePasswordInput struct {
+	CurrentPassword string `json:"currentPassword" validate:"required,max=256"`
+	NewPassword     string `json:"newPassword" validate:"required,min=8,max=256,nefield=CurrentPassword"`
+}
+
+type FlatLoginInput struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type CompositeItem struct {
+	Name string `json:"name" validate:"required"`
+}
+
+type CompositeInput struct {
+	Tags   []string                   `json:"tags" validate:"max=3,dive,min=1"`
+	Fixed  [2]int                     `json:"fixed"`
+	Scores map[string]int             `json:"scores"`
+	ByID   map[int]CompositeItem      `json:"byId"`
+	Item   CompositeItem              `json:"item"`
+	Items  []CompositeItem            `json:"items"`
+	Nested map[string][]CompositeItem `json:"nested"`
+}
+
+// Generated modules must compile under noUnusedLocals and noUnusedParameters
+// whichever helpers the inputs need, including none of the collection ones.
+func TestZodGeneratedModulesHaveNoUnusedDeclarations(t *testing.T) {
+	flat := func(r *trpcgo.Router) {
+		trpcgo.MustMutation(r, "auth.signup", func(context.Context, FlatSignupInput) (string, error) { return "", nil })
+		trpcgo.MustMutation(r, "auth.login", func(context.Context, FlatLoginInput) (string, error) { return "", nil })
+		trpcgo.MustMutation(r, "auth.changePassword", func(context.Context, FlatChangePasswordInput) (string, error) { return "", nil })
+	}
+	composite := func(r *trpcgo.Router) {
+		trpcgo.MustQuery(r, "composite", func(context.Context, CompositeInput) (CompositeItem, error) { return CompositeItem{}, nil })
+	}
+	for name, register := range map[string]func(*trpcgo.Router){"flat": flat, "composite": composite} {
+		t.Run(name, func(t *testing.T) {
+			forEachStyle(t, func(t *testing.T, mini bool) {
+				r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
+				t.Cleanup(func() { _ = r.Close() })
+				register(r)
+				dir := t.TempDir()
+				symlinkNodeModules(t, dir)
+				if err := r.GenerateTS(filepath.Join(dir, "trpc.ts")); err != nil {
+					t.Fatal(err)
+				}
+				if err := r.GenerateZod(filepath.Join(dir, "schemas.ts")); err != nil {
+					t.Fatal(err)
+				}
+				assertGeneratedTypeScriptHasNoUnused(t, dir)
+			})
+		})
+	}
+}

@@ -272,7 +272,7 @@ func zodUniquePredicate(f Field, param, value string) (string, bool) {
 	} else {
 		key = zodEqualityKey(d, "element", "index", false)
 	}
-	return "new Set(" + values + ".map((element: unknown, index: number) => JSON.stringify(" + key + "))).size === " + values + ".length", true
+	return "new Set(" + values + ".map((element: unknown, " + TSParam("index", key) + ": number) => JSON.stringify(" + key + "))).size === " + values + ".length", true
 }
 
 // Structural keys contain only Go comparable fields. Normalization happens in
@@ -327,4 +327,25 @@ func zodEqualityKey(d *GoEqualityType, value, index string, quoted bool) string 
 		key = "(" + nilCheck + ` ? ["nil"] : ` + key + ")"
 	}
 	return "((value: unknown) => " + key + ")(" + value + ")"
+}
+
+// TSParam names a parameter of a generated function whose body is body. A
+// parameter the body never reads gets a leading underscore, which TypeScript's
+// noUnusedParameters accepts.
+func TSParam(name, body string) string {
+	for start := 0; ; start++ {
+		i := strings.Index(body[start:], name)
+		if i < 0 {
+			return "_" + name
+		}
+		start += i
+		end := start + len(name)
+		if (start == 0 || !isTSIdentifierPart(body[start-1])) && (end == len(body) || !isTSIdentifierPart(body[end])) {
+			return name
+		}
+	}
+}
+
+func isTSIdentifierPart(c byte) bool {
+	return c == '$' || c == '_' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
 }

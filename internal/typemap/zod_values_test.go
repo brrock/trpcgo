@@ -158,3 +158,20 @@ func TestUniqueSelectsQuotedJSONNumberOnly(t *testing.T) {
 		})
 	}
 }
+
+func TestTSParam(t *testing.T) {
+	for _, tc := range []struct{ body, want string }{
+		{"data.x", "data"},
+		{"(data)", "data"},
+		{"data", "data"},
+		{"metadata", "_data"},
+		{"data_x + $data", "_data"},
+		{"datadata", "_data"},
+		{"datadata || data", "data"},
+		{"true", "_data"},
+	} {
+		if got := TSParam("data", tc.body); got != tc.want {
+			t.Errorf("TSParam(%q) = %q, want %q", tc.body, got, tc.want)
+		}
+	}
+}
