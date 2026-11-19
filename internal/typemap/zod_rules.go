@@ -29,7 +29,7 @@ func (c zodCheck) functional() string {
 // goIssueCheck raises a Zod issue when a validator predicate fails. Issues keep
 // the codes and fields of Zod's own checks, so Zod words their messages in the
 // application's locale.
-const goIssueCheck = `(valid: (value: any) => boolean, issue: Record<string, unknown>) => z.superRefine((value: any, ctx) => { if (!valid(value)) ctx.addIssue({ ...issue, input: value } as z.core.$ZodRawIssue); })`
+const goIssueCheck = `(valid: (value: any) => boolean, issue: Record<string, unknown>) => z.superRefine((value: any, ctx) => { if (!valid(value)) ctx.addIssue({ ...issue, input: value } as z.core.$ZodSuperRefineIssue); })`
 
 // goSchemaCheck returns a predicate that tests values against a schema, and
 // whose issues method returns the issues Zod reports for a value. The schema is

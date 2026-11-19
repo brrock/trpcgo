@@ -14,11 +14,13 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/brrock/trpcgo"
 	"github.com/brrock/trpcgo/internal/codegen"
+	"github.com/brrock/trpcgo/internal/tstest"
 	"github.com/brrock/trpcgo/internal/typemap"
 	"github.com/brrock/trpcgo/testdata/typegraph"
 	"github.com/brrock/trpcgo/testdata/validationcontract"
@@ -521,9 +523,9 @@ func assertTypeScriptCompiles(t *testing.T, dir string, files ...string) {
 }
 
 // assertGeneratedTypeScriptHasNoUnused compiles every generated module in dir
-// on its own, as an application with noUnusedLocals and noUnusedParameters
-// does. Hand-written test scripts are left out, so they may keep unused
-// type-level assertions.
+// on its own under the strictest options an application is likely to enable,
+// noUnusedLocals and noUnusedParameters included. Hand-written test scripts are
+// left out, so they may keep unused type-level assertions and loose accesses.
 func assertGeneratedTypeScriptHasNoUnused(t *testing.T, dir string) {
 	t.Helper()
 	sources, err := filepath.Glob(filepath.Join(dir, "*.ts"))
@@ -543,11 +545,11 @@ func assertGeneratedTypeScriptHasNoUnused(t *testing.T, dir string) {
 	if len(generated) == 0 {
 		return
 	}
-	args := append([]string{
-		"--noEmit", "--strict", "--noUnusedLocals", "--noUnusedParameters", "--skipLibCheck",
+	args := slices.Concat([]string{
+		"--noEmit", "--skipLibCheck",
 		"--target", "ES2022", "--allowImportingTsExtensions",
 		"--module", "ES2022", "--moduleResolution", "bundler",
-	}, generated...)
+	}, tstest.StrictFlags(), tstest.UnusedFlags(), generated)
 	cmd := exec.CommandContext(t.Context(), typeScriptCompiler(t), args...)
 	cmd.Dir = dir
 	if output, err := cmd.CombinedOutput(); err != nil {

@@ -99,7 +99,7 @@ func writeZodShapeTypes(ew *errWriter, plan EmitPlan, defs map[string]typemap.Ty
 	}
 	reachable := transitiveReachable(roots, defs)
 	shapeType := func(ts string) string {
-		return mapTypeNames(ts, func(name string) string {
+		return zodOptionalUndefined(mapTypeNames(ts, func(name string) string {
 			if _, ok := defs[name]; ok {
 				return "$" + name
 			}
@@ -112,7 +112,7 @@ func writeZodShapeTypes(ew *errWriter, plan EmitPlan, defs map[string]typemap.Ty
 				return "$" + name
 			}
 			return "unknown"
-		})
+		}))
 	}
 	// Types referenced only by zod_omit fields have no schema, so they follow
 	// the schemas in name order.
@@ -153,6 +153,9 @@ func writeZodShapeTypes(ew *errWriter, plan EmitPlan, defs map[string]typemap.Ty
 							field.ValidateOmitempty = false
 						}
 						field.Optional = typemap.ZodFieldOptional(field)
+					}
+					if field.Optional {
+						field.Type = withUndefined(field.Type)
 					}
 					fields = append(fields, field)
 				}

@@ -12,8 +12,35 @@ import (
 	"testing"
 )
 
+// StrictFlags are the type-checking options generated code must satisfy: the
+// strictest a consuming project is likely to enable. skipLibCheck does not
+// cover generated .ts files, so any option that rejects them breaks the user's
+// build. Callers add their own emit and module options.
+func StrictFlags() []string {
+	return []string{
+		"--strict",
+		"--exactOptionalPropertyTypes",
+		"--noUncheckedIndexedAccess",
+		"--noPropertyAccessFromIndexSignature",
+		"--noImplicitOverride",
+		"--noImplicitReturns",
+		"--noFallthroughCasesInSwitch",
+		"--verbatimModuleSyntax",
+		"--isolatedModules",
+		"--erasableSyntaxOnly",
+	}
+}
+
+// UnusedFlags reject unused declarations, as applications commonly do. They
+// apply to generated modules; hand-written test scripts may keep unused
+// type-level assertions.
+func UnusedFlags() []string {
+	return []string{"--noUnusedLocals", "--noUnusedParameters"}
+}
+
 // Run writes sources into a fresh directory that resolves the locked packages,
-// type-checks every TypeScript file in strict mode and executes main with tsx.
+// type-checks every TypeScript file under StrictFlags and UnusedFlags and
+// executes main with tsx.
 // The test is skipped when the Node dependencies are not installed, except in
 // CI, where their absence is a failure.
 func Run(t testing.TB, sources map[string]string, main string) {
@@ -31,7 +58,7 @@ func Run(t testing.TB, sources map[string]string, main string) {
 		files = append(files, name)
 	}
 	slices.Sort(files)
-	args := append([]string{"--noEmit", "--strict", "--skipLibCheck", "--target", "ES2022", "--module", "ES2022", "--moduleResolution", "bundler"}, files...)
+	args := slices.Concat([]string{"--noEmit", "--skipLibCheck", "--target", "ES2022", "--module", "ES2022", "--moduleResolution", "bundler"}, StrictFlags(), UnusedFlags(), files)
 	compile := exec.CommandContext(t.Context(), filepath.Join(modules, ".bin", "tsc"), args...)
 	compile.Dir = dir
 	if output, err := compile.CombinedOutput(); err != nil {

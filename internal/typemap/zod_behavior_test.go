@@ -67,7 +67,7 @@ for (const test of cases) {
     else if (!result.error.issues.some((actual) => matches(actual, want))) failures.push(test.name + ": " + input + " raised " + JSON.stringify(result.error.issues) + ", want " + issue);
   }
   if (test.schema) {
-    const property = (z.toJSONSchema(test.zod) as { properties: Record<string, unknown> }).properties.value;
+    const property = (z.toJSONSchema(test.zod) as { properties: Record<string, unknown> }).properties["value"];
     if (!matches(property, JSON.parse(test.schema))) failures.push(test.name + ": JSON Schema " + JSON.stringify(property) + ", want " + test.schema);
   }
 }

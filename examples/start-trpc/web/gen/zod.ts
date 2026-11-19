@@ -9,7 +9,7 @@ type $ZodOutdated = typeof z.core.version extends { major: 4; minor: 0 | 1 | 2 |
 type $ZodSupported<Outdated extends never> = Outdated;
 export type $ZodVersionCheck = $ZodSupported<$ZodOutdated>;
 
-const $trpcgoIssue = (valid: (value: any) => boolean, issue: Record<string, unknown>) => z.superRefine((value: any, ctx) => { if (!valid(value)) ctx.addIssue({ ...issue, input: value } as z.core.$ZodRawIssue); });
+const $trpcgoIssue = (valid: (value: any) => boolean, issue: Record<string, unknown>) => z.superRefine((value: any, ctx) => { if (!valid(value)) ctx.addIssue({ ...issue, input: value } as z.core.$ZodSuperRefineIssue); });
 const $trpcgoValid = (schema: () => z.core.$ZodType) => { let built: z.core.$ZodType | undefined; const parse = (value: unknown) => { if (built === undefined) built = schema(); return z.safeParse(built, value); }; return Object.assign((value: unknown): boolean => parse(value).success, { issues: (value: unknown): readonly object[] => parse(value).error?.issues ?? [] }); };
 const $trpcgoEmail = (value: string): boolean => {
   const at = value.lastIndexOf("@");
@@ -327,7 +327,7 @@ let $goJSONFailureSchema: z.core.$ZodType | undefined;
 function $goJSONFailure(failure: $GoWireFailure) {
   if ($goJSONFailureSchema === undefined) {
     $goJSONFailureSchema = z.custom<$GoWireFailure>().check(z.superRefine((failure: $GoWireFailure, ctx) => {
-      for (const issue of $goWireIssues(failure)) ctx.addIssue(issue);
+      for (const issue of $goWireIssues(failure)) ctx.addIssue(issue as z.core.$ZodSuperRefineIssue);
     }));
   }
   return z.safeParse($goJSONFailureSchema, failure);

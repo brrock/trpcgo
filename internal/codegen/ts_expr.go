@@ -217,3 +217,52 @@ func mapTypeExpressions(ts string, replacements map[string]string) string {
 		return replacement, ok
 	})
 }
+
+// zodOptionalUndefined adds undefined to the type of every optional property in
+// ts, nested inline objects included. Zod infers an optional property as
+// "name?: T | undefined", so a type annotating a schema must say the same, or
+// it is rejected by projects that enable exactOptionalPropertyTypes.
+func zodOptionalUndefined(ts string) string {
+	ts = strings.TrimSpace(ts)
+	if parts := splitTopLevel(ts, '|'); len(parts) > 1 {
+		for i := range parts {
+			parts[i] = zodOptionalUndefined(parts[i])
+		}
+		return strings.Join(parts, " | ")
+	}
+	if before, ok := strings.CutSuffix(ts, "[]"); ok {
+		return zodOptionalUndefined(before) + "[]"
+	}
+	if strings.HasPrefix(ts, "(") && strings.HasSuffix(ts, ")") {
+		return "(" + zodOptionalUndefined(ts[1:len(ts)-1]) + ")"
+	}
+	if fields, ok := inlineTypeFields(ts); ok {
+		for i := range fields {
+			fields[i].Type = zodOptionalUndefined(fields[i].Type)
+			if fields[i].Optional {
+				fields[i].Type = withUndefined(fields[i].Type)
+			}
+		}
+		return typemap.InlineObjectType(fields)
+	}
+	if i := strings.IndexByte(ts, '<'); i >= 0 && strings.HasSuffix(ts, ">") {
+		args := splitTopLevel(ts[i+1:len(ts)-1], ',')
+		for i := range args {
+			args[i] = zodOptionalUndefined(args[i])
+		}
+		return ts[:i] + "<" + strings.Join(args, ", ") + ">"
+	}
+	return ts
+}
+
+// withUndefined returns ts admitting undefined, leaving types that already
+// do unchanged.
+func withUndefined(ts string) string {
+	for _, part := range splitTopLevel(ts, '|') {
+		switch strings.TrimSpace(part) {
+		case "undefined", "unknown", "any":
+			return ts
+		}
+	}
+	return ts + " | undefined"
+}

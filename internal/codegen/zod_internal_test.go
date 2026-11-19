@@ -304,3 +304,21 @@ func TestZodUnvalidatedTypesFollowValidatorTraversal(t *testing.T) {
 		})
 	}
 }
+
+func TestZodOptionalUndefined(t *testing.T) {
+	for _, tc := range []struct{ in, want string }{
+		{"string", "string"},
+		{"{ a?: string; b: number }", "{ a?: string | undefined; b: number }"},
+		{"{ a?: string | null }", "{ a?: string | null | undefined }"},
+		{"{ a?: string | undefined }", "{ a?: string | undefined }"},
+		{"{ a?: unknown }", "{ a?: unknown }"},
+		{"{ a: { b?: $Node }[] }", "{ a: { b?: $Node | undefined }[] }"},
+		{"Record<string, { b?: number }>", "Record<string, { b?: number | undefined }>"},
+		{"{ a?: string } | null", "{ a?: string | undefined } | null"},
+		{`{ "x?y"?: string }`, `{ "x?y"?: string | undefined }`},
+	} {
+		if got := zodOptionalUndefined(tc.in); got != tc.want {
+			t.Errorf("zodOptionalUndefined(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}

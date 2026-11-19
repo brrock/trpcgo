@@ -181,7 +181,7 @@ let $goJSONFailureSchema: z.core.$ZodType | undefined;
 function $goJSONFailure(failure: $GoWireFailure) {
   if ($goJSONFailureSchema === undefined) {
     $goJSONFailureSchema = z.custom<$GoWireFailure>().check(z.superRefine((failure: $GoWireFailure, ctx) => {
-      for (const issue of $goWireIssues(failure)) ctx.addIssue(issue);
+      for (const issue of $goWireIssues(failure)) ctx.addIssue(issue as z.core.$ZodSuperRefineIssue);
     }));
   }
   return z.safeParse($goJSONFailureSchema, failure);
