@@ -35,6 +35,7 @@ type GenExtendedShadow struct {
 }
 
 func TestGenerateTSGenericConcreteFields(t *testing.T) {
+	t.Parallel()
 	for _, reverse := range []bool{false, true} {
 		t.Run(fmt.Sprintf("reverse=%t", reverse), func(t *testing.T) {
 			r := trpcgo.NewRouter()
@@ -78,6 +79,7 @@ void [total, page, items, first, second, text, flag, nestedFirst, nestedSecond, 
 }
 
 func TestGenerateTSShadowedEmbeddedField(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.MustVoidQuery(r, "shadow", func(_ context.Context) (GenShadowedInput, error) {
 		return GenShadowedInput{}, nil
@@ -105,6 +107,7 @@ void [value, extendedValue, inlineValue];
 }
 
 func TestOutputParserTransformTypegenDriftTS(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.MustVoidQuery(r, "user.get", func(_ context.Context) (DriftPrivateUser, error) {
@@ -141,6 +144,7 @@ func TestOutputParserTransformTypegenDriftTS(t *testing.T) {
 }
 
 func TestOutputParserTransformTypegenDriftSubscriptionTS(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.MustVoidSubscribe(r, "user.stream", func(_ context.Context) (<-chan DriftPrivateUser, error) {
@@ -180,6 +184,7 @@ func TestOutputParserTransformTypegenDriftSubscriptionTS(t *testing.T) {
 }
 
 func TestGenerateTSGenericInstantiation(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Query(r, "a.list", func(_ context.Context, _ struct{}) (GenPage[GenAlpha], error) {
@@ -215,6 +220,7 @@ func TestGenerateTSGenericInstantiation(t *testing.T) {
 }
 
 func TestGenerateTSGenericInterfaceDeduplication(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	// Three different instantiations of GenPage.
@@ -248,6 +254,7 @@ func TestGenerateTSGenericInterfaceDeduplication(t *testing.T) {
 }
 
 func TestGenerateTSMultiParamGeneric(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Query(r, "getPair", func(_ context.Context, _ struct{}) (GenPair[GenAlpha, GenBeta], error) {
@@ -272,6 +279,7 @@ func TestGenerateTSMultiParamGeneric(t *testing.T) {
 }
 
 func TestGenerateTSNoDuplicateInterfaceNames(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	// Register several procedures with different types.
@@ -303,6 +311,7 @@ func TestGenerateTSNoDuplicateInterfaceNames(t *testing.T) {
 }
 
 func TestGenerateTSGenericFieldTypes(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Query(r, "a.list", func(_ context.Context, _ struct{}) (GenPage[GenAlpha], error) {
@@ -336,6 +345,7 @@ func TestGenerateTSGenericFieldTypes(t *testing.T) {
 }
 
 func TestGenerateTSTypeEdgeCases(t *testing.T) {
+	t.Parallel()
 	t.Run("json.RawMessage to unknown", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (WithRawJSON, error) {
@@ -649,6 +659,7 @@ func TestGenerateTSTypeEdgeCases(t *testing.T) {
 }
 
 func TestGenerateTSInlineStructs(t *testing.T) {
+	t.Parallel()
 	t.Run("mixed field types", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.Query(r, "create", func(_ context.Context, input struct {
@@ -729,6 +740,7 @@ func TestGenerateTSInlineStructs(t *testing.T) {
 }
 
 func TestGenerateTSAllProcTypes(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Query(r, "q", func(_ context.Context, _ CgAddress) (CgAddress, error) {
@@ -780,6 +792,7 @@ func TestGenerateTSAllProcTypes(t *testing.T) {
 }
 
 func TestGenerateTSSliceVariants(t *testing.T) {
+	t.Parallel()
 	t.Run("[]string", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) ([]string, error) { return nil, nil })
@@ -847,6 +860,7 @@ func TestGenerateTSSliceVariants(t *testing.T) {
 }
 
 func TestGenerateTSMapVariants(t *testing.T) {
+	t.Parallel()
 	t.Run("map[string]int", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (map[string]int, error) { return nil, nil })
@@ -894,6 +908,7 @@ func TestGenerateTSMapVariants(t *testing.T) {
 }
 
 func TestGenerateTSKitchenSink(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Query(r, "addr.get", func(_ context.Context, _ CgAddress) (CgAddress, error) {
@@ -969,6 +984,7 @@ func TestGenerateTSKitchenSink(t *testing.T) {
 }
 
 func TestGenerateTSNestedCollections(t *testing.T) {
+	t.Parallel()
 	t.Run("nested map map[string]map[string]int", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (NestedMapConfig, error) {
@@ -1068,6 +1084,7 @@ func TestGenerateTSNestedCollections(t *testing.T) {
 }
 
 func TestGenerateTSOmitzero(t *testing.T) {
+	t.Parallel()
 	t.Run("omitzero makes field optional", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (WithOmitzero, error) {
@@ -1120,6 +1137,7 @@ func TestGenerateTSOmitzero(t *testing.T) {
 }
 
 func TestGenerateTSMultipleEmbedded(t *testing.T) {
+	t.Parallel()
 	t.Run("multiple embedded structs flattened", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (FullEntity, error) {
@@ -1158,6 +1176,7 @@ func TestGenerateTSMultipleEmbedded(t *testing.T) {
 }
 
 func TestGenerateTSFieldsWithoutJSONTag(t *testing.T) {
+	t.Parallel()
 	t.Run("fields without json tag use Go name", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (NoJSONTags, error) {
@@ -1179,6 +1198,7 @@ func TestGenerateTSFieldsWithoutJSONTag(t *testing.T) {
 }
 
 func TestGenerateTSMiscEdgeCases(t *testing.T) {
+	t.Parallel()
 	t.Run("inline struct in map value", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (map[string]struct {
@@ -1236,6 +1256,7 @@ func TestGenerateTSMiscEdgeCases(t *testing.T) {
 }
 
 func TestGenerateTSExtends(t *testing.T) {
+	t.Parallel()
 	t.Run("basic extends", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.VoidQuery(r, "get", func(_ context.Context) (ExUser, error) {
@@ -1309,6 +1330,7 @@ func TestGenerateTSExtends(t *testing.T) {
 }
 
 func TestGenerateTSTsDoc(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.VoidQuery(r, "get", func(_ context.Context) (WithTSDoc, error) {
 		return WithTSDoc{}, nil
@@ -1330,6 +1352,7 @@ func TestGenerateTSTsDoc(t *testing.T) {
 }
 
 func TestGenerateTSTsc(t *testing.T) {
+	t.Parallel()
 	tscPath := typeScriptCompiler(t)
 
 	// Build a router exercising many type paths.
@@ -1398,6 +1421,7 @@ func TestGenerateTSTsc(t *testing.T) {
 }
 
 func TestGenerateEnumsTsc(t *testing.T) {
+	t.Parallel()
 	tscPath := typeScriptCompiler(t)
 
 	// Covers awkward enum values that still need to compile as TypeScript.
@@ -1453,6 +1477,7 @@ func TestGenerateEnumsTsc(t *testing.T) {
 }
 
 func TestGenerateTSTscExtended(t *testing.T) {
+	t.Parallel()
 	// Extended tsc validation covering all new patterns from typescriptify/tygo.
 	tscPath := typeScriptCompiler(t)
 
@@ -1555,6 +1580,7 @@ func TestGenerateTSTscExtended(t *testing.T) {
 }
 
 func TestGenerateTSNodeExecution(t *testing.T) {
+	t.Parallel()
 	tscPath := typeScriptCompiler(t)
 
 	r := trpcgo.NewRouter()
@@ -1633,6 +1659,7 @@ void addr; void nums; void tree; void bools; void base; void user; void doc;
 }
 
 func TestGenerateTS(t *testing.T) {
+	t.Parallel()
 	type Base struct {
 		ID        string     `json:"id"`
 		CreatedAt time.Time  `json:"createdAt"`
@@ -1772,6 +1799,7 @@ func TestGenerateTS(t *testing.T) {
 }
 
 func TestGenerateTSNoProcedures(t *testing.T) {
+	t.Parallel()
 	router := trpcgo.NewRouter()
 
 	outputPath := filepath.Join(t.TempDir(), "trpc.ts")
@@ -1796,6 +1824,7 @@ func TestGenerateTSNoProcedures(t *testing.T) {
 }
 
 func TestGenerateTSVoidInput(t *testing.T) {
+	t.Parallel()
 	router := trpcgo.NewRouter()
 	trpcgo.VoidQuery(router, "ping", func(ctx context.Context) (string, error) {
 		return "pong", nil
@@ -1822,6 +1851,7 @@ func TestGenerateTSVoidInput(t *testing.T) {
 }
 
 func TestGenerateTSIdempotent(t *testing.T) {
+	t.Parallel()
 	router := trpcgo.NewRouter()
 	trpcgo.VoidQuery(router, "ping", func(ctx context.Context) (string, error) {
 		return "pong", nil
@@ -1847,6 +1877,7 @@ func TestGenerateTSIdempotent(t *testing.T) {
 }
 
 func TestGenerateTSTrackedEventWrapper(t *testing.T) {
+	t.Parallel()
 	type Notification struct {
 		Message string `json:"message"`
 	}
@@ -1884,6 +1915,7 @@ func TestGenerateTSTrackedEventWrapper(t *testing.T) {
 // type-check for every instantiation. The reflection mapper emits concrete
 // declarations and must agree on the parsed shapes.
 func TestGenerateTSGenericMapKeyConstraints(t *testing.T) {
+	t.Parallel()
 	script := `
 import { GenericMapInputSchema } from './schemas';
 import type { GenericMapInput } from './trpc';

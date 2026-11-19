@@ -22,12 +22,14 @@ import (
 
 // The complete corpus runs in one module to expose interactions between helpers.
 func TestZodValidationContract(t *testing.T) {
+	t.Parallel()
 	testZodValidationCases(t, validationcontract.Cases(), inputPolicyAssertions)
 }
 
 // This module has no integer maps or fixed arrays. Quoted decoding and scalar
 // refinements must work without those helpers being pulled in by another input.
 func TestZodQuotedWireContract(t *testing.T) {
+	t.Parallel()
 	cases := slices.Concat(validationcontract.WireCases, validationcontract.ScalarBoundaryCases, validationcontract.CrossFieldOmissionCases)
 	runZodContract(t, zodContract{cases: cases, absent: []string{"function $goIntegerMap", "function $goFixedArray"}})
 }
@@ -38,6 +40,7 @@ type NumericTagNumberInput struct {
 
 // numeric on a Go number must compile and keep rejecting nonnumeric object input.
 func TestZodNumericTagContract(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -57,6 +60,7 @@ for (const value of [1.5, "42", true, null]) {
 // tag without fixtures fails here; the Go oracle in examples/start-trpc/server
 // additionally requires that the validator itself rejects a case for the tag.
 func TestValidationContractCoversSupportedTags(t *testing.T) {
+	t.Parallel()
 	cases := validationcontract.Cases()
 	coverage, err := validationcontract.Coverage(cases, nil)
 	if err != nil {
@@ -83,6 +87,7 @@ if (typeof unvalidated.id !== 'object') throw new Error('omitted field unexpecte
 `
 
 func TestZodIntegerMapDecodingContract(t *testing.T) {
+	t.Parallel()
 	runTypeGraphContract(t, []string{"IntegerMapInput"}, integerMapContractScript)
 }
 
@@ -159,6 +164,7 @@ assert(!IntegerMapInputSchema.safeParse({...empty,recursive:{1:{'01':{},'1':{}}}
 // Named constants come from static analysis only, so this contract has no
 // reflection leg. Accepted values must decode to the same Go value as the input.
 func TestZodDecodedNamedEnumContract(t *testing.T) {
+	t.Parallel()
 	pkg := typeGraphPackage(t)
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		mapper := typemap.NewMapper(map[string]typemap.TypeMeta{
@@ -200,6 +206,7 @@ func TestZodDecodedNamedEnumContract(t *testing.T) {
 // unnamed scalar, whether constants make the type a union or not. The named
 // type itself stays open. Static analysis alone knows the constants.
 func TestZodOneofNarrowsNamedScalars(t *testing.T) {
+	t.Parallel()
 	pkg := typeGraphPackage(t)
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		mapper := typemap.NewMapper(map[string]typemap.TypeMeta{
@@ -281,6 +288,7 @@ console.log(JSON.stringify(results));
 // Ordinary object parsing and map normalization must work in a module without
 // fixed arrays. All other regression cases also run in the combined corpus.
 func TestZodIntegerMapObjectContract(t *testing.T) {
+	t.Parallel()
 	testZodValidationCases(t, validationcontract.MapDecodingCases, mapObjectAssertions)
 }
 
@@ -317,6 +325,7 @@ for (const values of [null, [], 'wrong', 1, { 'invalid': 1 }, { '1': 'wrong' }])
 
 // Array padding and zero-value omission also run without integer-map schemas.
 func TestZodFixedArrayContract(t *testing.T) {
+	t.Parallel()
 	testZodValidationCases(t, slices.Concat(validationcontract.FixedArrayCases, validationcontract.ArrayZeroCases), fixedArrayContextAssertions, arrayZeroContextAssertions)
 }
 
@@ -355,6 +364,7 @@ assertArray(allocatedOuter.values[0]?.name === undefined && allocatedOuter.value
 `
 
 func TestZodFixedArrayClientContract(t *testing.T) {
+	t.Parallel()
 	pkg := validationContractTypes(t)
 	forEachGeneration(t, func(t *testing.T, mini, static bool) {
 		dir := t.TempDir()
@@ -481,6 +491,7 @@ void nullable; void nilElement;
 // contract now verifies successful TS compilation, inferred recursive types,
 // and validation of nested values with both mappers and Zod variants.
 func TestZodRecursiveContainerContract(t *testing.T) {
+	t.Parallel()
 	script := `
 import { RecursiveInputSchema, RecursiveMapSchema, RecursiveSliceSchema } from './schemas';
 import type { RecursiveInput } from './trpc';
@@ -507,6 +518,7 @@ void [map,slice,wrongMap,wrongSlice];
 // the root menu enters its elements and dive re-enters nested menus, while a
 // struct field without dive never enters its collection.
 func TestZodAnonymousRecursionContract(t *testing.T) {
+	t.Parallel()
 	script := `
 import { AnonymousMenuSchema, AnonymousRecursionInputSchema } from './schemas';
 import type { AnonymousMenu, AnonymousRecursionInput } from './trpc';
@@ -533,6 +545,7 @@ void [label, wrong];
 }
 
 func TestZodConcreteGenericContract(t *testing.T) {
+	t.Parallel()
 	script := `
 import { GenericInputSchema } from './schemas';
 import type { GenericInput } from './trpc';
@@ -554,6 +567,7 @@ void [text,number,wrong];
 }
 
 func TestZodAnonymousMetadataContract(t *testing.T) {
+	t.Parallel()
 	script := `
 import { InlineInputSchema } from './schemas';
 const input = { optionalName:'',details:{count:1,name:'ok',low:1,high:2},items:[{name:'ok'}],map:{one:{count:1}} };
@@ -579,6 +593,7 @@ void [name,secret];
 }
 
 func TestZodEnumReferencesAndSparseKeysContract(t *testing.T) {
+	t.Parallel()
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		pkg := typeGraphPackage(t)
 		mapper := typemap.NewMapper(map[string]typemap.TypeMeta{
@@ -623,6 +638,7 @@ void open;
 // A named constant type's raw JSON check follows its Go kind: a boolean
 // constant type accepts JSON booleans, and an int8 one keeps its bounds.
 func TestZodNamedConstantWireKinds(t *testing.T) {
+	t.Parallel()
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		pkg := typeGraphPackage(t)
 		mapper := typemap.NewMapper(map[string]typemap.TypeMeta{
@@ -652,6 +668,7 @@ for (const raw of ['{"flag":1,"level":1}', '{"flag":"true","level":1}', '{"flag"
 }
 
 func TestZodGenericProcedureInputIdentity(t *testing.T) {
+	t.Parallel()
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		pkg := typeGraphPackage(t)
 		mapper := typemap.NewMapper(nil)
@@ -690,6 +707,7 @@ if(wide.safeParse({...input,value:32768}).success) throw new Error('wide generic
 }
 
 func TestZodGenericInheritanceIdentity(t *testing.T) {
+	t.Parallel()
 	script := `
 import {GenericExtendedInputSchema} from './schemas';
 import type {GenericExtendedInput} from './trpc';
@@ -703,6 +721,7 @@ for(const invalid of [{...input,narrow:{value:128,label:'bad'}},{...input,wide:{
 }
 
 func TestZodExplicitRequiredOverridesOmission(t *testing.T) {
+	t.Parallel()
 	script := `
 import {RequiredOmitInputSchema} from './schemas';
 import type {RequiredOmitInput} from './trpc';
@@ -729,6 +748,7 @@ void [text,nestedText,inlineText,missing];
 // anonymous recursive fields must still select their own lazy schema and
 // retain their distinct integer bounds at every depth.
 func TestZodGenericAnonymousRecursionIdentity(t *testing.T) {
+	t.Parallel()
 	script := `
 import {GenericInlineRecursiveInputSchema} from './schemas';
 import type {GenericInlineRecursiveInput} from './trpc';
@@ -766,6 +786,7 @@ void [narrowValue,wideValue,childValue,mapValue,wrong];
 }
 
 func TestZodValidationDiagnosticsAgreeAcrossMappers(t *testing.T) {
+	t.Parallel()
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		pkg := typeGraphPackage(t)
 		mapper := typemap.NewMapper(nil)
@@ -850,6 +871,7 @@ type CompositeInput struct {
 // Generated modules must compile under noUnusedLocals and noUnusedParameters
 // whichever helpers the inputs need, including none of the collection ones.
 func TestZodGeneratedModulesHaveNoUnusedDeclarations(t *testing.T) {
+	t.Parallel()
 	flat := func(r *trpcgo.Router) {
 		trpcgo.MustMutation(r, "auth.signup", func(context.Context, FlatSignupInput) (string, error) { return "", nil })
 		trpcgo.MustMutation(r, "auth.login", func(context.Context, FlatLoginInput) (string, error) { return "", nil })

@@ -25,6 +25,7 @@ import (
 )
 
 func TestZodRecursiveBaseExtension(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -53,6 +54,7 @@ if (forward.safeParse({ value: 'x', children: [{ value: 1, children: [] }] }).su
 }
 
 func TestZodFlattenedBaseRefinements(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -73,6 +75,7 @@ if (nested.safeParse({ 'lower-bound': 10, 'upper-bound': 1, label: 2 }).success)
 }
 
 func TestZodEnumConstraintComposition(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -109,6 +112,7 @@ type InheritanceOrderOuter struct {
 // order, including promoted fields at their embedded position. The flattened
 // schema must present the same order to its key matcher.
 func TestZodInheritanceKeepsGoKeyMatchOrder(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.MustQuery(r, "outer", func(context.Context, InheritanceOrderOuter) (string, error) { return "", nil })
 	checkGeneratedZod(t, r, `
@@ -142,6 +146,7 @@ func goDecodingNested(depth int) string {
 // fields. Exported object schemas stay plain objects with the full object API,
 // and raw JSON is decoded by decodeGoJSON before any schema sees it.
 func TestZodGoDecodingKeepsPlainObjectSchemas(t *testing.T) {
+	t.Parallel()
 	// The contract's nesting limit is Go's: 10000 levels decode, 10001 do not.
 	for depth, valid := range map[int]bool{10000: true, 10001: false} {
 		var input GoDecodingInput
@@ -232,6 +237,7 @@ type NestedTrackedInput struct {
 }
 
 func TestZodNestedTrackedInput(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -280,6 +286,7 @@ type ZodContainerLeaf struct {
 }
 
 func TestZodCaseChecksRuntime(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -301,6 +308,7 @@ for (const input of [{ name: 'ALICE' }, { code: 'abc' }, { name: '' }, { code: '
 }
 
 func TestZodMiniOmitemptyEmailRuntime(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter(trpcgo.WithZodMini(true))
 	trpcgo.MustQuery(r, "check", func(_ context.Context, input ZodOmitEmailInput) (string, error) {
 		return "ok", nil
@@ -319,6 +327,7 @@ if (schema.safeParse({}).success) throw new Error('missing required count was ac
 }
 
 func TestZodRecursiveSchemaModule(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -349,6 +358,7 @@ void [label, wrong, secret];
 }
 
 func TestZodMutualRecursionAndExtendsModule(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -371,6 +381,7 @@ if (extended.safeParse({ id: 'root', children: [{ id: 12, children: [] }] }).suc
 }
 
 func TestZodNestedContainersRuntime(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -396,6 +407,7 @@ for (const input of [
 }
 
 func TestGenerateZodBasic(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Mutation(r, "auth.login", func(_ context.Context, input ZodLoginInput) (struct {
@@ -432,6 +444,7 @@ raises(item.safeParse({ name: 'a', tags: [], count: 1001 }), 'too_big', 'count')
 }
 
 func TestGenerateZodOptional(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	trpcgo.Query(r, "search", func(_ context.Context, input ZodOptionalInput) ([]string, error) {
@@ -452,6 +465,7 @@ func TestGenerateZodOptional(t *testing.T) {
 }
 
 func TestGenerateZodGoKind(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	type NumInput struct {
@@ -483,6 +497,7 @@ func TestGenerateZodGoKind(t *testing.T) {
 }
 
 func TestGenerateZodVoidInputProducesNothing(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 
 	// VoidQuery registers with nil inputType → InputTS = "void".
@@ -507,6 +522,7 @@ func TestGenerateZodVoidInputProducesNothing(t *testing.T) {
 // Unnamed scalar inputs have no schema, so a router with only those exports
 // no module rather than a decoder over an empty schema union.
 func TestGenerateZodScalarInputsProduceNothing(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.MustQuery(r, "echo", func(_ context.Context, input string) (string, error) { return input, nil })
 	trpcgo.MustQuery(r, "count", func(_ context.Context, input int) (int, error) { return input, nil })
@@ -521,6 +537,7 @@ func TestGenerateZodScalarInputsProduceNothing(t *testing.T) {
 }
 
 func TestGenerateZodMini(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter(trpcgo.WithZodMini(true))
 
 	trpcgo.Mutation(r, "auth.login", func(_ context.Context, input ZodLoginInput) (struct {
@@ -560,6 +577,7 @@ func TestGenerateZodMini(t *testing.T) {
 }
 
 func TestGenerateZodExtends(t *testing.T) {
+	t.Parallel()
 	t.Run("basic extends retains inherited fields", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.Mutation(r, "create", func(_ context.Context, input ZodDerived) (string, error) {
@@ -668,6 +686,7 @@ func TestGenerateZodExtends(t *testing.T) {
 }
 
 func TestGenerateZodStaleFileCleanup(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	zodOut := filepath.Join(dir, "zod.ts")
 
@@ -698,6 +717,7 @@ func TestGenerateZodStaleFileCleanup(t *testing.T) {
 }
 
 func TestGenerateZodUnsupportedComment(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.Mutation(r, "spawn", func(_ context.Context, input ZodUnsupportedInput) (string, error) {
 		return "", nil
@@ -730,6 +750,7 @@ func TestGenerateZodUnsupportedComment(t *testing.T) {
 }
 
 func TestGenerateZodCrossField(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.Mutation(r, "update", func(_ context.Context, input ZodCrossFieldInput) (string, error) {
 		return "", nil
@@ -757,6 +778,7 @@ func TestGenerateZodCrossField(t *testing.T) {
 }
 
 func TestGenerateZodCrossFieldAllOps(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.Mutation(r, "check", func(_ context.Context, input ZodCrossFieldAllOps) (string, error) {
 		return "", nil
@@ -789,6 +811,7 @@ func TestGenerateZodCrossFieldAllOps(t *testing.T) {
 }
 
 func TestGenerateZodInt64Number(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -817,6 +840,7 @@ for (const input of [
 }
 
 func TestGenerateZodNewTags(t *testing.T) {
+	t.Parallel()
 	for _, mini := range []bool{false, true} {
 		t.Run(zodStyleName(mini), func(t *testing.T) {
 			r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
@@ -846,6 +870,7 @@ for (const [field, values] of Object.entries(invalid)) {
 }
 
 func TestZodRuntimeValidation(t *testing.T) {
+	t.Parallel()
 	_, tsx := zodRuntime(t)
 	runValidation := func(t *testing.T, zodCode, script string) {
 		t.Helper()
@@ -1187,6 +1212,7 @@ console.log("All " + passed + " tests passed");
 }
 
 func TestGenerateZodDescribeAndMeta(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter()
 	trpcgo.Mutation(r, "configure", func(_ context.Context, input WithTSDoc) (string, error) {
 		return "", nil
@@ -1215,6 +1241,7 @@ func TestGenerateZodDescribeAndMeta(t *testing.T) {
 }
 
 func TestGenerateZodOmit(t *testing.T) {
+	t.Parallel()
 	t.Run("field unvalidated in Zod but kept in TS", func(t *testing.T) {
 		r := trpcgo.NewRouter()
 		trpcgo.Mutation(r, "update", func(_ context.Context, input ZodOmitInput) (string, error) {
@@ -1268,6 +1295,7 @@ func TestGenerateZodOmit(t *testing.T) {
 }
 
 func TestZodConfigurationAppliedBeforeFieldBinding(t *testing.T) {
+	t.Parallel()
 	config := zodconfig.Config{TagName: "binding", Aliases: map[string]string{
 		"requiredText": "required,min=2", "afterStart": "gtfield=Start", "nonemptyList": "min=1,dive,required",
 	}}
@@ -1314,6 +1342,7 @@ for(const input of [
 }
 
 func TestGenerateZodUsesRouterUnknownFieldPolicy(t *testing.T) {
+	t.Parallel()
 	for _, strict := range []bool{false, true} {
 		r := trpcgo.NewRouter(trpcgo.WithStrictInput(strict))
 		trpcgo.MustQuery(r, "input", func(context.Context, fixture.Child) (bool, error) { return true, nil })
@@ -1329,6 +1358,7 @@ func TestGenerateZodUsesRouterUnknownFieldPolicy(t *testing.T) {
 }
 
 func TestInvalidZodConfigurationPreservesFiles(t *testing.T) {
+	t.Parallel()
 	r := trpcgo.NewRouter(trpcgo.WithZodValidation(zodconfig.Config{Aliases: map[string]string{"first": "second", "second": "first"}}))
 	trpcgo.MustQuery(r, "input", func(context.Context, fixture.Input) (bool, error) { return true, nil })
 	for _, generate := range []func(string) error{r.GenerateTS, r.GenerateZod} {
@@ -1350,6 +1380,7 @@ func TestInvalidZodConfigurationPreservesFiles(t *testing.T) {
 }
 
 func TestZodCustomValidationContract(t *testing.T) {
+	t.Parallel()
 	assertions := `
 import { setMinimum } from './custom-validators';
 setMinimum(0);
@@ -1377,6 +1408,7 @@ if (schemas.CustomDynamicInputSchema.safeParse({}).success) throw new Error('mis
 // callback or guard, so the original expressions must bind to the import.
 // Hoisting happens in the schema writer, which both mappers share.
 func TestZodCustomPredicateImportHygiene(t *testing.T) {
+	t.Parallel()
 	for _, alias := range []string{"check", "value", "result", "data", "integer"} {
 		t.Run(alias, func(t *testing.T) {
 			config := validationcontract.CustomValidation()
@@ -1413,6 +1445,7 @@ if (!schemas.CustomSafeInputSchema.safeParse({value:'changed'}).success) throw n
 }
 
 func TestZodEmbeddedRefinementSemantics(t *testing.T) {
+	t.Parallel()
 	checkCompositionZod(t, fieldcomposition.RefinementCases, func(r *trpcgo.Router) {
 		trpcgo.MustQuery(r, "optional", func(context.Context, fieldcomposition.OptionalBoundsInput) (string, error) { return "", nil })
 		trpcgo.MustQuery(r, "strict", func(context.Context, fieldcomposition.OptionalStrictBoundsInput) (string, error) { return "", nil })
@@ -1431,6 +1464,7 @@ if (schemas.OptionalTargetInputSchema.safeParse({ ceiling: 1 }).success) throw n
 }
 
 func TestZodJSONPromotionSemantics(t *testing.T) {
+	t.Parallel()
 	encoded, err := json.Marshal(fieldcomposition.PromotionInput{})
 	if err != nil {
 		t.Fatal(err)
@@ -1448,6 +1482,7 @@ func TestZodJSONPromotionSemantics(t *testing.T) {
 }
 
 func TestZodElementOmitemptySemantics(t *testing.T) {
+	t.Parallel()
 	checkCompositionZod(t, fieldcomposition.ElementValidationCases, func(r *trpcgo.Router) {
 		trpcgo.MustQuery(r, "elements", func(context.Context, fieldcomposition.ElementOmitemptyInput) (string, error) { return "", nil })
 		trpcgo.MustQuery(r, "pointerElements", func(context.Context, fieldcomposition.PointerElementOmitemptyInput) (string, error) { return "", nil })
@@ -1463,6 +1498,7 @@ for (const input of [
 }
 
 func TestZodNumericEnumOmitemptySemantics(t *testing.T) {
+	t.Parallel()
 	checkCompositionZod(t, fieldcomposition.NumericEnumValidationCases, func(r *trpcgo.Router) {
 		trpcgo.MustQuery(r, "numericEnums", func(context.Context, fieldcomposition.NumericEnumOmitemptyInput) (string, error) { return "", nil })
 	}, `
@@ -1526,6 +1562,7 @@ for (const test of cases) {
 }
 
 func TestZodSchemaSpecificRecursiveTypes(t *testing.T) {
+	t.Parallel()
 	forEachGeneration(t, func(t *testing.T, mini, static bool) {
 		dir := t.TempDir()
 		symlinkNodeModules(t, dir)
@@ -1576,6 +1613,7 @@ for (const input of [{ ...leaf, tags: [{ name: '' }] }, { ...leaf, inline: { z: 
 }
 
 func TestZodNonStructExtendsKeepsOtherSchemas(t *testing.T) {
+	t.Parallel()
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
 		trpcgo.MustQuery(r, "time", func(context.Context, schemaissues.NonStructBase) (string, error) { return "", nil })
@@ -1611,6 +1649,7 @@ func registerMalformedScope[T any](r *trpcgo.Router) {
 // The invalid directive must survive both mappers until grammar validation. In
 // particular, a malformed dive must not disappear at the first split.
 func TestZodMalformedDirectiveContract(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		tag, message string
 		register     func(*trpcgo.Router)
@@ -1661,6 +1700,7 @@ type ZodVersionInput struct {
 // maps zod to copies of the installed package whose core reports a version
 // below the floor; the assertion is a type, so the module gains no runtime code.
 func TestZodModuleRejectsOlderZodAtCompileTime(t *testing.T) {
+	t.Parallel()
 	forEachStyle(t, func(t *testing.T, mini bool) {
 		r := trpcgo.NewRouter(trpcgo.WithZodMini(mini))
 		trpcgo.Mutation(r, "user.create", func(_ context.Context, input ZodVersionInput) (string, error) {
@@ -1713,6 +1753,7 @@ export const version = { major: %d, minor: %d, patch: 0 } as const;
 // The floor is promised in several places; each must state the one the
 // generator enforces, so bumping ZodMinimumVersion fails until they agree.
 func TestZodMinimumVersionIsStatedConsistently(t *testing.T) {
+	t.Parallel()
 	m := codegen.ZodMinimumVersion
 	floor := fmt.Sprintf("%d.%d.%d", m[0], m[1], m[2])
 	for file, want := range map[string]string{
