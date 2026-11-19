@@ -8,18 +8,22 @@ export const Route = createFileRoute('/users/create')({
   component: CreateUserComponent,
 })
 
+type FieldErrors = Partial<Record<keyof CreateUserInput, string>>
+
+const fields = ['name', 'email', 'role', 'bio'] as const satisfies readonly (keyof CreateUserInput)[]
+
+function isField(key: unknown): key is (typeof fields)[number] {
+  return fields.includes(key as (typeof fields)[number])
+}
+
 function CreateUserComponent() {
   const { trpc } = Route.useRouteContext()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState<CreateUserInput>({
-    name: '',
-    email: '',
-    role: '' as Role,
-    bio: undefined,
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  // Form fields hold raw strings; empty optional fields are left out of the input.
+  const [form, setForm] = useState({ name: '', email: '', role: '', bio: '' })
+  const [errors, setErrors] = useState<FieldErrors>({})
 
   const createUser = useMutation({
     ...trpc.user.create.mutationOptions(),
@@ -33,22 +37,25 @@ function CreateUserComponent() {
     e.preventDefault()
     setErrors({})
 
-    const input = { ...form }
-    if (!input.role) delete (input as any).role
-    if (!input.bio) delete (input as any).bio
+    const input: CreateUserInput = {
+      name: form.name,
+      email: form.email,
+      ...(form.role && { role: form.role as Role }),
+      ...(form.bio && { bio: form.bio }),
+    }
 
     const result = CreateUserInputSchema.safeParse(input)
     if (!result.success) {
-      const fieldErrors: Record<string, string> = {}
+      const fieldErrors: FieldErrors = {}
       for (const issue of result.error.issues) {
-        const key = String(issue.path[0])
-        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+        const key = issue.path[0]
+        if (isField(key)) fieldErrors[key] ??= issue.message
       }
       setErrors(fieldErrors)
       return
     }
 
-    createUser.mutate(result.data as CreateUserInput)
+    createUser.mutate(input)
   }
 
   return (
@@ -78,7 +85,7 @@ function CreateUserComponent() {
         <Field label="Role" error={errors.role}>
           <select
             value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
+            onChange={(e) => setForm({ ...form, role: e.target.value })}
             className="w-full border rounded-md px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
             <option value="">Default (viewer)</option>
@@ -90,8 +97,8 @@ function CreateUserComponent() {
 
         <Field label="Bio" error={errors.bio}>
           <textarea
-            value={form.bio ?? ''}
-            onChange={(e) => setForm({ ...form, bio: e.target.value || undefined })}
+            value={form.bio}
+            onChange={(e) => setForm({ ...form, bio: e.target.value })}
             rows={3}
             className="w-full border rounded-md px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none"
             placeholder="Optional biography..."
@@ -120,7 +127,7 @@ function Field({
   children,
 }: {
   label: string
-  error?: string
+  error?: string | undefined
   children: React.ReactNode
 }) {
   return (
